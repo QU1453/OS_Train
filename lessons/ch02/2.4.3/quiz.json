@@ -1,0 +1,118 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "银行家算法属于死锁处理策略中的（　）。",
+      "options": [
+        "死锁预防",
+        "死锁避免",
+        "死锁检测",
+        "死锁解除"
+      ],
+      "answer": 1,
+      "explain": "银行家算法在每次分配资源前先进行安全性预演，<strong>只在分配后系统仍处于安全状态时才真正分配</strong>，属于<strong>死锁避免</strong>。死锁预防是破坏四个必要条件；死锁检测与解除是事后处理。故选 B。"
+    },
+    {
+      "id": "q2",
+      "stem": "所谓系统处于<strong>安全状态</strong>，是指（　）。",
+      "options": [
+        "系统中没有任何进程处于等待状态",
+        "存在一个进程推进顺序，使所有进程都能获得所需资源并顺利运行完成",
+        "所有进程的最大需求之和不超过系统中的资源总量",
+        "当前可用资源数大于任一进程的最大需求"
+      ],
+      "answer": 1,
+      "explain": "<strong>安全状态</strong>的定义是：系统能按<strong>某种进程推进顺序</strong>为每个进程分配其所需的资源，直到所有进程都能顺利完成，这个顺序即<strong>安全序列</strong>。有无进程等待、需求之和是否超标都不是判断安全状态的依据，故选 B。"
+    },
+    {
+      "id": "q3",
+      "stem": "关于安全状态、不安全状态与死锁的关系，下列叙述中<strong>正确</strong>的是（　）。",
+      "options": [
+        "不安全状态一定会导致死锁",
+        "安全状态也可能发生死锁",
+        "死锁状态一定是不安全状态，但不安全状态不一定会发生死锁",
+        "安全状态与死锁之间没有任何必然联系"
+      ],
+      "answer": 2,
+      "explain": "三者的包含关系为<strong>死锁 ⊂ 不安全 ⊂ 全部状态</strong>。安全状态一定不发生死锁；不安全状态只是<strong>可能</strong>发生死锁（进程若不申请到最大需求也可能顺利结束）；死锁状态必然是不安全状态。因此 C 正确，A、B、D 错误。"
+    },
+    {
+      "id": "q4",
+      "stem": "某进程的 Max = (4, 3, 2)，Allocation = (2, 1, 1)，则它的 Need 为（　）。",
+      "options": [
+        "(2, 2, 1)",
+        "(2, 2, 3)",
+        "(6, 4, 3)",
+        "(2, 1, 1)"
+      ],
+      "answer": 0,
+      "explain": "由恒等式 <strong>Need = Max − Allocation</strong>，逐分量相减：(4−2, 3−1, 2−1) = <strong>(2, 2, 1)</strong>，故选 A。(6,4,3) 是把两者相加，(2,2,3) 计算有误。"
+    },
+    {
+      "id": "q5",
+      "stem": "系统有 A、B、C 三类资源，总量分别为 (9, 6, 5)，当前各进程已分配资源之和为 (4, 3, 2)，则当前 Available 为（　）。",
+      "options": [
+        "(5, 3, 3)",
+        "(13, 9, 7)",
+        "(4, 3, 2)",
+        "(5, 3, 2)"
+      ],
+      "answer": 0,
+      "explain": "由恒等式 <strong>Available = 资源总量 − 已分配总量</strong>：(9−4, 6−3, 5−2) = <strong>(5, 3, 3)</strong>，故选 A。(13,9,7) 是相加，理解反了。"
+    },
+    {
+      "id": "q6",
+      "stem": "某系统 Available = (3, 3, 2)，各进程 Need 为：P0=(7,4,3)、P1=(1,2,2)、P2=(6,0,0)、P3=(0,1,1)、P4=(4,3,1)。按「每次选可完成进程中下标最小者」的规则，安全序列的<strong>第一个</strong>进程是（　）。",
+      "options": [
+        "P0",
+        "P1",
+        "P2",
+        "P3"
+      ],
+      "answer": 1,
+      "explain": "安全性检查中需找 <strong>Need ≤ Work(=Available)</strong> 的进程。逐一比较：P0 的 (7,4,3) 不满足；<strong>P1 的 (1,2,2) ≤ (3,3,2) 满足</strong>；P2 的 (6,0,0) 不满足；P3 的 (0,1,1) 也满足。按「下标最小」约定，第一个应选 <strong>P1</strong>，故选 B。"
+    },
+    {
+      "id": "q7",
+      "stem": "进程 P<sub>i</sub> 提出资源请求 Request<sub>i</sub> 后，银行家算法检查的<strong>第一步</strong>是（　）。",
+      "options": [
+        "判断 Request<sub>i</sub> ≤ Available",
+        "判断 Request<sub>i</sub> ≤ Need<sub>i</sub>",
+        "直接分配后再做安全性检查",
+        "判断 Request<sub>i</sub> ≤ 系统资源总量"
+      ],
+      "answer": 1,
+      "explain": "银行家算法中资源请求算法的检查顺序是：① 先判断 <strong>Request<sub>i</sub> ≤ Need<sub>i</sub></strong>（请求不能超过它声明的尚需量，否则视为出错）；② 再判断 <strong>Request<sub>i</sub> ≤ Available</strong>（资源是否够）；③ 试探性分配；④ 做安全性检查。故第一步是 B。"
+    },
+    {
+      "id": "q8",
+      "stem": "下列选项中，<strong>属于</strong>银行家算法局限性（前提/缺点）的是（　）。",
+      "options": [
+        "无需知道进程的资源需求，实现简单",
+        "要求每个进程预先申明其最大资源需求，且计算开销大、并发度受限",
+        "通过破坏死锁的四个必要条件之一来避免死锁",
+        "只适用于只有一个进程的单道系统"
+      ],
+      "answer": 1,
+      "explain": "银行家算法要求<strong>预先获知每个进程的最大资源需求 Max</strong>，且每次分配都要做安全性检查，<strong>计算量大、资源利用率与并发度受到限制</strong>，故 B 正确。它<strong>不破坏</strong>四个必要条件（那是死锁预防的做法），C 错误；它面向多进程多资源系统，A、D 错误。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "银行家算法：安全性检查与安全序列",
+      "prompt": "<p>给定系统当前状态：可用资源向量 <code>available</code>（长度 m），各进程的<strong>最大需求矩阵</strong> <code>max_need</code> 与<strong>已分配矩阵</strong> <code>allocation</code>（均为 n × m）。请实现<strong>安全性算法</strong>，判断系统是否安全，并给出一个安全序列。</p><ul><li>先计算 <code>need[i][j] = max_need[i][j] - allocation[i][j]</code>；</li><li>令工作向量 <code>work = available</code>，反复在<strong>尚未完成</strong>的进程中寻找满足 <code>need[i] ≤ work</code>（逐分量）的<strong>最小下标</strong>进程 i，令 <code>work += allocation[i]</code> 并把 i 加入安全序列；</li><li>直到找不到可选进程为止。</li></ul><p>返回 <code>{\"safe\": bool, \"sequence\": [...]}</code>：若所有进程都能完成则 <code>safe</code> 为 true，<code>sequence</code> 为完整安全序列；否则 <code>safe</code> 为 false，<code>sequence</code> 为<strong>已能完成的进程前缀</strong>。</p>",
+      "c_reference": "/* 等价 C 语言参考：银行家算法安全性检查（示意） */\n#include <stdio.h>\n#include <stdbool.h>\n\n#define MAXN 16\n#define MAXM 16\n\n/* available[0..m-1]；max_need / allocation 为 [n][m]；seq 输出安全序列；返回进程数 */\nint safety(int n, int m, int available[], int max_need[][MAXM],\n           int allocation[][MAXM], int seq[]) {\n    int work[MAXM];\n    int need[MAXN][MAXM];\n    bool finish[MAXN];\n    for (int j = 0; j < m; j++) work[j] = available[j];\n    for (int i = 0; i < n; i++) {\n        finish[i] = false;\n        for (int j = 0; j < m; j++) need[i][j] = max_need[i][j] - allocation[i][j];\n    }\n\n    int cnt = 0;\n    while (true) {\n        int found = -1;\n        for (int i = 0; i < n && found == -1; i++) {\n            if (finish[i]) continue;\n            bool ok = true;\n            for (int j = 0; j < m; j++) {\n                if (need[i][j] > work[j]) { ok = false; break; }\n            }\n            if (ok) found = i;   /* 取最小下标 */\n        }\n        if (found == -1) break;\n        for (int j = 0; j < m; j++) work[j] += allocation[found][j];\n        finish[found] = true;\n        seq[cnt++] = found;\n    }\n    return cnt;   /* cnt == n 表示安全 */\n}\n\nint main(void) {\n    int available[3] = {3, 3, 2};\n    int max_need[5][MAXM] = {{7,5,3},{3,2,2},{9,0,2},{2,2,2},{4,3,3}};\n    int allocation[5][MAXM] = {{0,1,0},{2,0,0},{3,0,2},{2,1,1},{0,0,2}};\n    int seq[5];\n    int cnt = safety(5, 3, available, max_need, allocation, seq);\n    printf(\"safe=%d seq=\", cnt == 5);\n    for (int i = 0; i < cnt; i++) printf(\"%d \", seq[i]);\n    printf(\"\\n\");\n    return 0;\n}\n",
+      "python_reference": "def solve(available, max_need, allocation):\n    \"\"\"银行家算法安全性检查 + 安全序列。\n\n    available: 一维资源向量（长度 m）。\n    max_need / allocation: [进程数][资源数] 的二维列表。\n    返回: {\"safe\": bool, \"sequence\": [已能完成的进程下标...]}\n          不安全时 sequence 为可完成前缀。\n    \"\"\"\n    n = len(allocation)\n    m = len(available)\n    work = list(available)\n    need = [[max_need[i][j] - allocation[i][j] for j in range(m)] for i in range(n)]\n    finish = [False] * n\n    sequence = []\n\n    while True:\n        found = -1\n        for i in range(n):                       # 取满足条件的最小下标进程\n            if finish[i]:\n                continue\n            if all(need[i][j] <= work[j] for j in range(m)):\n                found = i\n                break\n        if found == -1:\n            break\n        for j in range(m):                       # 进程 found 结束，归还其占用的资源\n            work[j] += allocation[found][j]\n        finish[found] = True\n        sequence.append(found)\n\n    return {\"safe\": len(sequence) == n, \"sequence\": sequence}\n",
+      "starter_python": "def solve(available, max_need, allocation):\n    \"\"\"银行家算法安全性检查 + 安全序列。\n\n    available: 一维资源向量（长度 m）。\n    max_need / allocation: [进程数][资源数] 的二维列表。\n    返回: {\"safe\": bool, \"sequence\": [已能完成的进程下标...]}\n    \"\"\"\n    # TODO: 1) 计算 need[i][j] = max_need[i][j] - allocation[i][j]\n    #       2) 令 work = available，反复寻找满足 need[i] <= work（逐分量）\n    #          的最小下标未完成进程 i，令 work += allocation[i] 并加入安全序列\n    #       3) 返回 {\"safe\": 是否全部完成, \"sequence\": 安全序列/可完成前缀}\n    pass\n",
+      "judge_problem_id": "banker-algorithm",
+      "hints": [
+        "先用 need = max_need − allocation 算出每个进程还需要的资源。",
+        "工作向量 work 初始等于 available；进程 i 完成后要把 allocation[i] 加回 work。",
+        "每次在未完成进程中选择「need[i] 逐分量 ≤ work」的进程；题目约定取下标最小者。",
+        "安全序列不唯一，但按最小下标规则结果确定。",
+        "若序列长度等于进程总数则 safe=True，否则 safe=False，sequence 只保留已能完成的前缀。"
+      ]
+    }
+  ]
+}

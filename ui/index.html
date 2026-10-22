@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' 'unsafe-inline' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ws: http://127.0.0.1:*" />
+  <title>操作系统复习 · 进程与调度</title>
+  <link rel="stylesheet" href="/ui/vendor/codemirror/lib/codemirror.css" />
+  <link rel="stylesheet" href="/ui/css/theme.css" />
+  <link rel="stylesheet" href="/ui/css/codemirror-theme.css" />
+
+  <!-- three.js 模块解析（离线 vendor，ESM 裸标识符映射） -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/ui/vendor/three/three.module.js",
+      "three/addons/": "/ui/vendor/three/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <!-- ================= 侧栏：课程总目录 ================= -->
+    <aside id="sidebar">
+      <div class="brand">
+        <div class="brand__glyph">OS</div>
+        <div class="brand__text">
+          <h1 class="brand__title">操作系统复习</h1>
+          <div class="brand__sub">进程与调度 · 内存管理之前</div>
+        </div>
+      </div>
+
+      <div class="overall">
+        <div class="overall__row">
+          <span class="overall__label">TOTAL PROGRESS</span>
+          <span class="overall__val" id="overall-val">0 / 29</span>
+        </div>
+        <div class="bar"><div class="bar__fill" id="overall-bar"></div></div>
+      </div>
+
+      <nav class="nav" id="nav" aria-label="课程目录">
+        <div class="empty-state">
+          <div class="empty-state__glyph">[ ]</div>
+          <div class="empty-state__title">正在载入目录</div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- ================= 主区域 ================= -->
+    <div id="main">
+      <header class="topbar">
+        <button class="icon-btn" id="btn-toggle" title="折叠 / 展开目录" aria-label="折叠目录">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+
+        <button class="icon-btn" id="btn-reveal" title="展开目录" aria-label="展开目录"
+                style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+        <div class="crumb" id="crumb">
+          <span class="crumb__ch mono">HOME</span>
+          <span class="crumb__sep">/</span>
+          <span class="crumb__title">课程总目录</span>
+        </div>
+
+        <div class="topbar__spacer"></div>
+
+        <span class="topbar__meta" id="tb-meta"></span>
+        <button class="chip" id="btn-export" title="导出进度为 JSON 备份">导出备份</button>
+        <button class="chip" id="btn-import" title="从 JSON 备份导入进度">导入备份</button>
+        <button class="chip" id="btn-wrong" title="查看错题本">错题本</button>
+      </header>
+
+      <div class="scroll" id="scroll">
+        <main class="page" id="page"></main>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-host"></div>
+
+  <!-- QWebChannel 官方客户端（离线 UMD，定义全局 QWebChannel） -->
+  <script src="/ui/vendor/qwebchannel.js"></script>
+
+  <!-- CodeMirror 5（UMD，离线）：代码编辑器的 VSCode 式语法高亮 -->
+  <script src="/ui/vendor/codemirror/lib/codemirror.js"></script>
+  <script src="/ui/vendor/codemirror/mode/clike/clike.js"></script>
+  <script src="/ui/vendor/codemirror/mode/python/python.js"></script>
+  <script src="/ui/vendor/codemirror/addon/edit/matchbrackets.js"></script>
+  <script src="/ui/vendor/codemirror/addon/edit/closebrackets.js"></script>
+  <script src="/ui/vendor/codemirror/addon/selection/active-line.js"></script>
+
+  <!-- 应用入口（ESM） -->
+  <script type="module" src="/ui/js/app.js"></script>
+</body>
+</html>

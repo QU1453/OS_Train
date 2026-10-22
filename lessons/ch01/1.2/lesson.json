@@ -1,0 +1,16 @@
+{
+  "id": "1.2",
+  "chapter": "ch01",
+  "order": 2,
+  "title": "操作系统的发展历程",
+  "subtitle": "手工操作 · 批处理 · 分时 · 实时",
+  "tags": [
+    "概念"
+  ],
+  "difficulty": "基础",
+  "minutes": 20,
+  "exam": "各阶段特征与优缺点；多道批处理的宏微观并行；网络系统与分布式系统的区别",
+  "scenes": [
+    "os-evolution"
+  ]
+}

@@ -1,0 +1,506 @@
+/* ============================================================================
+ * codemirror-theme.css —— CodeMirror 5 的 VSCode Light+ 风格主题 + 代码题面板样式
+ *
+ * 配色对齐 VSCode Light+：不同语义的字符用不同颜色（关键字/字符串/数字/
+ * 注释/函数/变量/类型/运算），满足「像 VSCode 一样按功能区分颜色」的要求。
+ * 说明：主题类名仍为 .cm-s-osdark（对应 editor.js 中 theme:'osdark'），
+ *       仅把配色由深色版换成浅色版，避免改动 JS 造成不必要的联动。
+ * ========================================================================== */
+
+/* ---------------------------------------------------------------- 编辑器本体 */
+
+.cm-s-osdark.CodeMirror {
+  background: var(--editor-bg);
+  color: #1F2430;
+  height: auto;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  letter-spacing: 0;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.cm-s-osdark .CodeMirror-gutters {
+  background: var(--editor-gutter);
+  border-right: 1px solid var(--line);
+  padding-right: 4px;
+}
+
+.cm-s-osdark .CodeMirror-linenumber {
+  color: #A6B2C0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.cm-s-osdark .CodeMirror-cursor {
+  border-left: 2px solid var(--accent);
+}
+
+.cm-s-osdark .CodeMirror-selected {
+  background: rgba(11, 125, 111, 0.13);
+}
+
+.cm-s-osdark .CodeMirror-focused .CodeMirror-selected,
+.cm-s-osdark .CodeMirror-line::selection,
+.cm-s-osdark .CodeMirror-line > span::selection {
+  background: rgba(11, 125, 111, 0.22);
+}
+
+.cm-s-osdark .CodeMirror-activeline-background {
+  background: rgba(15, 25, 45, 0.035);
+}
+
+.cm-s-osdark .CodeMirror-matchingbracket {
+  color: var(--accent) !important;
+  outline: 1px solid rgba(11, 125, 111, 0.5);
+  background: rgba(11, 125, 111, 0.1);
+}
+
+.cm-s-osdark .CodeMirror-nonmatchingbracket {
+  color: var(--err) !important;
+}
+
+/* --- 语法着色（VSCode Light+ 取色） --- */
+.cm-s-osdark .cm-comment          { color: #008000; font-style: italic; }
+.cm-s-osdark .cm-keyword          { color: #0000FF; }
+.cm-s-osdark .cm-operator         { color: #1F2430; }
+.cm-s-osdark .cm-number           { color: #098658; }
+.cm-s-osdark .cm-string           { color: #A31515; }
+.cm-s-osdark .cm-string-2         { color: #A31515; }
+.cm-s-osdark .cm-variable         { color: #001080; }
+.cm-s-osdark .cm-variable-2       { color: #0070C1; }
+.cm-s-osdark .cm-variable-3       { color: #267F99; }
+.cm-s-osdark .cm-def              { color: #795E26; }
+.cm-s-osdark .cm-builtin          { color: #267F99; }
+.cm-s-osdark .cm-atom             { color: #0000FF; }
+.cm-s-osdark .cm-attribute        { color: #001080; }
+.cm-s-osdark .cm-property         { color: #001080; }
+.cm-s-osdark .cm-qualifier        { color: #267F99; }
+.cm-s-osdark .cm-tag              { color: #800000; }
+.cm-s-osdark .cm-bracket          { color: #1F2430; }
+.cm-s-osdark .cm-meta             { color: #AF00DB; }
+.cm-s-osdark .cm-type             { color: #267F99; }
+.cm-s-osdark .cm-link             { color: #0A66C2; text-decoration: underline; }
+.cm-s-osdark .cm-error            { color: #CD3131; }
+
+/* Python 控制流关键字（if/for/while/return…）走洋红，贴近 VSCode */
+.cm-s-osdark .cm-keyword.cm-control,
+.cm-s-osdark .cm-keyword.cm-logic { color: #AF00DB; }
+
+/* ---------------------------------------------------------------- 代码题面板 */
+
+.codeproblem {
+  margin: 26px 0 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--bg-1) 100%);
+  overflow: hidden;
+}
+
+.prob-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(15, 25, 45, 0.015);
+}
+
+.prob-head__no {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: var(--sem-key);
+  border-radius: 5px;
+  padding: 2px 8px;
+  letter-spacing: 0.04em;
+}
+
+.prob-head__title {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--text-1);
+  flex: 1;
+}
+
+.badge-judge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(11, 125, 111, 0.35);
+  color: var(--accent);
+  background: var(--accent-dim);
+  white-space: nowrap;
+}
+
+.badge-judge.is-nolive {
+  border-color: rgba(91, 107, 124, 0.35);
+  color: var(--sem-quote);
+  background: rgba(91, 107, 124, 0.1);
+}
+
+.prob-body {
+  padding: 16px 18px 0;
+  color: var(--text-2);
+  line-height: 1.85;
+}
+
+.prob-body p { margin: 0 0 10px; }
+.prob-body ul { margin: 0 0 12px; padding-left: 22px; }
+.prob-body li { margin: 4px 0; }
+
+/* --- 语言页签 --- */
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 18px;
+  margin-top: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tab {
+  appearance: none;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.tab:hover { color: var(--text-2); background: rgba(15, 25, 45, 0.03); }
+
+.tab.is-active {
+  color: var(--accent);
+  background: var(--editor-bg);
+  border-color: var(--line);
+  border-bottom: 1px solid var(--editor-bg);
+  margin-bottom: -1px;
+}
+
+.tab__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ok);
+  margin-left: 7px;
+  vertical-align: middle;
+  opacity: 0;
+}
+
+.tab__dot.is-on { opacity: 1; }
+
+/* --- 编辑器容器 --- */
+.editor-host {
+  border-bottom: 1px solid var(--line);
+  background: var(--editor-bg);
+}
+
+.editor-host .CodeMirror {
+  border-radius: 0;
+}
+
+.pane { display: none; }
+.pane.is-active { display: block; }
+
+/* 隐藏态：flex 元素同样要能隐藏 */
+.judge-panel [hidden],
+.run-strip[hidden],
+.hints__list[hidden] { display: none !important; }
+
+/* CodeMirror 未加载时的降级文本域 */
+.cm-fallback {
+  display: block;
+  width: 100%;
+  min-height: 300px;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: none;
+  outline: none;
+  resize: vertical;
+  background: var(--editor-bg);
+  color: #1F2430;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  tab-size: 4;
+}
+
+/* --- 操作条 --- */
+.code-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(15, 25, 45, 0.012);
+}
+
+.btn--run {
+  background: var(--accent);
+  color: #FFFFFF;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+.btn--run:hover:not(:disabled) { filter: brightness(1.08); }
+
+.btn--run:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn--stop {
+  background: rgba(192, 57, 43, 0.1);
+  color: var(--err);
+  border-color: rgba(192, 57, 43, 0.38);
+}
+
+.code-actions__spacer { flex: 1; }
+
+.save-state {
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+/* --- 提示 --- */
+.hints {
+  padding: 0 18px 16px;
+}
+
+.hints__toggle {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--sem-memo);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.hints__list {
+  margin: 0;
+  padding: 10px 14px 10px 30px;
+  border-left: 2px solid var(--sem-memo);
+  background: rgba(26, 127, 75, 0.06);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-2);
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+
+.hints__list[hidden] { display: none; }
+
+.hints__list li + li { margin-top: 10px; }
+
+/* 提示里的图解：撑满整行，去掉列表缩进带来的悬空 */
+.hints__fig {
+  margin: 8px 0 2px;
+  margin-left: -18px;
+}
+
+/* --- 解析（大题文字解析 + 解析图解） --- */
+.explain {
+  padding: 0 18px 16px;
+}
+
+.explain__label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+
+.explain__text {
+  padding: 10px 14px;
+  border-left: 2px solid var(--sem-key);
+  background: rgba(37, 99, 235, 0.05);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-2);
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+
+.explain__text p { margin: 0 0 8px; }
+.explain__text p:last-child { margin-bottom: 0; }
+.explain__text code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-1);
+}
+
+.explain__fig { margin-top: 12px; }
+
+/* ---------------------------------------------------------------- 判题面板 */
+
+.judge-panel {
+  padding: 0 18px 18px;
+}
+
+.judge-panel:empty { display: none; }
+
+.judge-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: var(--text-3);
+  text-transform: uppercase;
+}
+
+.judge-verdict {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+
+.judge-verdict.is-pass {
+  color: var(--ok);
+  border-color: rgba(26, 127, 75, 0.45);
+  background: rgba(26, 127, 75, 0.1);
+}
+
+.judge-verdict.is-fail {
+  color: var(--err);
+  border-color: rgba(192, 57, 43, 0.45);
+  background: rgba(192, 57, 43, 0.1);
+}
+
+.judge-verdict.is-run {
+  color: var(--accent);
+  border-color: rgba(11, 125, 111, 0.45);
+  background: var(--accent-dim);
+}
+
+.judge-verdict.is-stop {
+  color: var(--warn);
+  border-color: rgba(178, 106, 0, 0.45);
+  background: rgba(178, 106, 0, 0.1);
+}
+
+.judge-summary {
+  color: var(--text-2);
+  font-size: 13.5px;
+  line-height: 1.7;
+  margin: 8px 0 12px;
+}
+
+.judge-summary:empty { display: none; }
+
+.judge-count {
+  margin-left: auto;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.case-list { display: flex; flex-direction: column; gap: 6px; }
+
+.case-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.case-row__icon { font-family: var(--font-mono); font-weight: 700; }
+.case-row.is-ok .case-row__icon { color: var(--ok); }
+.case-row.is-no .case-row__icon { color: var(--err); }
+.case-row.is-run .case-row__icon { color: var(--accent); }
+
+.case-row__name { color: var(--text-1); flex: 0 0 auto; min-width: 96px; }
+.case-row__msg { color: var(--text-2); font-family: var(--font-mono); font-size: 12.5px; word-break: break-all; }
+
+.run-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 10px 0;
+}
+
+.run-chip {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  color: var(--text-3);
+}
+
+.run-chip.is-ok { color: var(--ok); border-color: rgba(26, 127, 75, 0.4); background: rgba(26, 127, 75, 0.08); }
+.run-chip.is-no { color: var(--err); border-color: rgba(192, 57, 43, 0.4); background: rgba(192, 57, 43, 0.08); }
+.run-chip.is-run { color: var(--accent); border-color: rgba(11, 125, 111, 0.4); }
+.run-chip.is-idle { opacity: 0.5; }
+
+.evidence {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(192, 57, 43, 0.28);
+  background: rgba(192, 57, 43, 0.06);
+}
+
+.evidence__title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: var(--sem-warn);
+  margin-bottom: 6px;
+}
+
+.evidence ul { margin: 0; padding-left: 20px; }
+.evidence li { color: var(--text-2); font-size: 13px; line-height: 1.7; }
+
+.trace-box {
+  margin-top: 10px;
+  max-height: 260px;
+  overflow: auto;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--editor-gutter);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-2);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(11, 125, 111, 0.25);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: cmspin 0.7s linear infinite;
+  vertical-align: -2px;
+  margin-right: 6px;
+}
+
+@keyframes cmspin { to { transform: rotate(360deg); } }

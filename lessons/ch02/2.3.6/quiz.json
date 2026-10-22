@@ -1,0 +1,117 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "在读者-写者问题中，关于各类进程访问共享对象的约束，正确的说法是（　）。",
+      "options": [
+        "读者之间互斥，写者之间可以并发",
+        "读者之间可以并发，写者之间以及读者与写者之间都互斥",
+        "读者与写者可以并发，写者之间互斥",
+        "所有进程都必须互斥访问"
+      ],
+      "answer": 1,
+      "explain": "读操作不改变数据，故<strong>读者与读者可以同时读</strong>；写操作会改变数据，故<strong>写者与写者互斥</strong>，且写者与读者之间也必须<strong>互斥</strong>（否则读者可能读到不一致的中间状态）。因此选「读读并发、写写互斥、读写互斥」。"
+    },
+    {
+      "id": "q2",
+      "stem": "读者-写者问题中设置计数器 readcount 的主要目的是（　）。",
+      "options": [
+        "记录缓冲区中数据的个数",
+        "记录当前正在读的读者数目，用于判断是否为第一个或最后一个读者",
+        "记录写者已经写过的次数",
+        "代替互斥信号量保护共享数据"
+      ],
+      "answer": 1,
+      "explain": "readcount 记录<strong>当前正在读的读者数目</strong>，使读者能够判断「自己是不是第一个进入者」或「是不是最后一个离开者」，从而只在必要时对写者信号量 wmutex 加锁/解锁。它不是缓冲区计数，也不能代替信号量完成互斥。"
+    },
+    {
+      "id": "q3",
+      "stem": "在读者优先的解法中，下列操作正确的是（　）。",
+      "options": [
+        "每个读者进入前都要执行 P(wmutex)",
+        "第一个读者进入时执行 P(wmutex)，最后一个读者离开时执行 V(wmutex)",
+        "每个读者离开时都要执行 V(wmutex)",
+        "读者从不操作 wmutex，由写者单独管理"
+      ],
+      "answer": 1,
+      "explain": "wmutex 承担读/写互斥，多个读者只应<strong>整体占用一次</strong>：因此由<strong>第一个读者对 wmutex 加锁</strong>（挡住写者），由<strong>最后一个读者解锁</strong>（放行写者）。若每个读者都 P/V 一次，读者之间就被强行串行化了，违背「读读共享」。"
+    },
+    {
+      "id": "q4",
+      "stem": "读者-写者问题中，信号量 rmutex 的作用是（　）。",
+      "options": [
+        "实现写者之间的互斥",
+        "实现读者与写者之间的互斥",
+        "保护对共享变量 readcount 的互斥访问",
+        "保护共享数据对象本身"
+      ],
+      "answer": 2,
+      "explain": "rmutex 是一个初值为 1 的互斥信号量，专门用来<strong>保护 readcount 的加减与判断</strong>（读-改-写），防止多个读者并发修改 readcount 造成<strong>丢失更新</strong>。读写互斥与写写互斥由 wmutex 负责，共享数据对象本身由 wmutex 保护。"
+    },
+    {
+      "id": "q5",
+      "stem": "若读者对 readcount 的访问<strong>不加 rmutex 保护</strong>，最可能出现的后果是（　）。",
+      "options": [
+        "读/写互斥被破坏，写者可能与读者同时访问",
+        "写者之间不再互斥",
+        "缓冲区发生溢出",
+        "读者被饿死"
+      ],
+      "answer": 0,
+      "explain": "readcount 的「读—改—写」若并发执行会发生<strong>丢失更新</strong>，可能使 readcount 的值与实际读者数不符：例如两个读者同时读到 0 并各自加一，却都以为自己是第一个而对 wmutex 重复加锁；或都以为不是最后一个而漏掉解锁，最终导致<strong>读/写互斥被破坏</strong>或写者无法被唤醒。"
+    },
+    {
+      "id": "q6",
+      "stem": "采用「读者优先」策略时，可能出现的问题是（　）。",
+      "options": [
+        "读者饥饿",
+        "写者饥饿",
+        "缓冲区溢出",
+        "丢失更新"
+      ],
+      "answer": 1,
+      "explain": "读者优先下，只要不断有读者到来，readcount 始终大于 0，写者就拿不到 wmutex，可能<strong>长期得不到执行，即写者饥饿</strong>。若要避免，可引入额外的信号量实现「写优先」或公平调度。"
+    },
+    {
+      "id": "q7",
+      "stem": "读者-写者问题中存在互斥信号量 wmutex 和 rmutex，下列叙述正确的是（　）。",
+      "options": [
+        "wmutex 只用于写者之间互斥，与读者无关",
+        "wmutex 同时承担写者互斥和读/写互斥，rmutex 只保护 readcount",
+        "rmutex 同时承担读/写互斥和写者互斥",
+        "rmutex 与 wmutex 的初值都应为 0"
+      ],
+      "answer": 1,
+      "explain": "wmutex 被读者（第一个加锁、最后一个解锁）与写者共同使用，因此它<strong>既实现写者互斥，又实现读/写互斥</strong>；rmutex 仅用于<strong>保护 readcount</strong>。两个信号量初值都应为 <strong>1</strong>（互斥信号量），故 D 错误。"
+    },
+    {
+      "id": "q8",
+      "stem": "读者-写者问题与生产者-消费者问题相比，其最显著的差别是（　）。",
+      "options": [
+        "读者-写者问题不需要任何信号量",
+        "读者-写者问题的关键是多读进程可同时读、但读写必须互斥，而生产者-消费者围绕有界缓冲区做同步",
+        "生产者-消费者问题不存在互斥关系",
+        "读者-写者问题不需要共享变量"
+      ],
+      "answer": 1,
+      "explain": "生产者-消费者的核心是「空间有限带来的<strong>同步</strong>（empty/full）」加「缓冲区的<strong>互斥</strong>」；读者-写者的核心是「<strong>读读共享、读写互斥</strong>」并用计数器 readcount 控制对写者信号量的整体占用。两者都需要信号量，都存在互斥成分，故 A、C 错误。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "读者-写者问题（读/写互斥）",
+      "prompt": "<p>用<strong>信号量机制</strong>实现读者-写者问题：多个读者进程可以<strong>同时读</strong>，但写者进程与任何进程（读者或写者）都<strong>互斥</strong>。请采用「读者优先」策略。</p><p>请在 <code>run(S)</code> 中：用 <code>S.counter(0, \"readcount\")</code> 建立读者计数器，用 <code>S.sem(1, ...)</code> 建立保护 readcount 的 <code>rmutex</code> 与承担读/写互斥的 <code>wmutex</code>；读者读数据时用 <code>S.enter(\"read\")</code> / <code>S.exit(\"read\")</code> 标注「读」区，写者写数据时用 <code>S.enter(\"write\")</code> / <code>S.exit(\"write\")</code> 标注「写」区。</p><p>判题会在多轮运行中校验：无异常、readcount 无丢失更新、写者之间互斥（write 区独占）、读与写互斥（read 与 write 不重叠）、无死锁。可用的 harness API：<code>S.sem(init, name)</code>、<code>S.P(s)</code>、<code>S.V(s)</code>、<code>S.counter(init, name)</code>（<code>.inc()</code>/<code>.dec()</code>/<code>.read()</code>）、<code>S.enter(label)</code>/<code>S.exit(label)</code>、<code>S.spawn(fn, *args)</code>、<code>S.sleep(ms)</code>，配置由 <code>S.cfg</code> 提供。</p>",
+      "c_reference": "int readcount = 0;\nsemaphore rmutex = 1;   // 保护 readcount\nsemaphore wmutex = 1;   // 写者互斥，兼读/写互斥\n\nreader() {\n    while (1) {\n        P(rmutex);\n        if (readcount == 0)\n            P(wmutex);       // 第一个读者锁住写者\n        readcount++;\n        V(rmutex);\n        // ---- 读数据 ----\n        P(rmutex);\n        readcount--;\n        if (readcount == 0)\n            V(wmutex);       // 最后一个读者放行写者\n        V(rmutex);\n    }\n}\n\nwriter() {\n    while (1) {\n        P(wmutex);\n        // ---- 写数据 ----\n        V(wmutex);\n    }\n}",
+      "python_reference": "def run(S):\n    nr = int(S.cfg[\"n_readers\"])\n    nw = int(S.cfg[\"n_writers\"])\n    rp = int(S.cfg[\"rounds_per_reader\"])\n    wp = int(S.cfg[\"rounds_per_writer\"])\n\n    rmutex = S.sem(1, \"rmutex\")     # 保护 readcount 的小互斥信号量\n    wmutex = S.sem(1, \"wmutex\")     # 写者互斥，兼读/写互斥\n    readcount = S.counter(0, \"readcount\")\n\n    def reader(rid):\n        for _ in range(rp):\n            S.P(rmutex)\n            readcount.inc()\n            if readcount.read() == 1:\n                S.P(wmutex)          # 第一个读者：锁住写者\n            S.V(rmutex)\n\n            S.enter(\"read\")\n            S.sleep(2)               # 读数据\n            S.exit(\"read\")\n\n            S.P(rmutex)\n            readcount.dec()\n            if readcount.read() == 0:\n                S.V(wmutex)          # 最后一个读者：放行写者\n            S.V(rmutex)\n\n    def writer(wid):\n        for _ in range(wp):\n            S.P(wmutex)\n            S.enter(\"write\")\n            S.sleep(2)               # 写数据\n            S.exit(\"write\")\n            S.V(wmutex)\n\n    for r in range(nr):\n        S.spawn(reader, r)\n    for w in range(nw):\n        S.spawn(writer, w)",
+      "starter_python": "def run(S):\n    nr = int(S.cfg[\"n_readers\"])\n    nw = int(S.cfg[\"n_writers\"])\n    rp = int(S.cfg[\"rounds_per_reader\"])\n    wp = int(S.cfg[\"rounds_per_writer\"])\n\n    # TODO: 1) rmutex = S.sem(1) 保护 readcount；wmutex = S.sem(1) 承担读/写与写/写互斥\n    # TODO: 2) readcount = S.counter(0, \"readcount\")\n    # TODO: 3) reader(rid)：P(rmutex) -> readcount.inc()\n    #            -> 若 readcount.read()==1 则 P(wmutex) -> V(rmutex)\n    #            -> S.enter(\"read\")/S.exit(\"read\") -> P(rmutex) -> readcount.dec()\n    #            -> 若 readcount.read()==0 则 V(wmutex) -> V(rmutex)\n    # TODO: 4) writer(wid)：P(wmutex) -> S.enter(\"write\")/S.exit(\"write\") -> V(wmutex)\n    # TODO: 5) 用 S.spawn 启动 nr 个读者与 nw 个写者\n    pass",
+      "judge_problem_id": "rw-reader-writer",
+      "hints": [
+        "readcount 的 inc/dec 与判断必须在 rmutex 保护下进行，否则会丢失更新。",
+        "只在 readcount 由 0 变 1 时 P(wmutex)，由 1 变 0 时 V(wmutex)。",
+        "写者用 wmutex 包裹整段写过程，读写互斥即由这把锁保证。",
+        "读、写临界区要用 S.enter(\"read\")/S.enter(\"write\") 标注，判题据此校验互斥。"
+      ]
+    }
+  ]
+}

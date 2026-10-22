@@ -1,0 +1,16 @@
+{
+  "id": "2.2.1",
+  "chapter": "ch02",
+  "order": 13,
+  "title": "调度的概念与层次",
+  "subtitle": "三级调度 · 作业调度与进程调度",
+  "tags": [
+    "概念"
+  ],
+  "difficulty": "基础",
+  "minutes": 24,
+  "exam": "高级/中级/低级调度；作业调度与进程调度；三级调度的联系",
+  "scenes": [
+    "sched-levels"
+  ]
+}

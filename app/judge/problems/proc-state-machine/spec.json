@@ -1,0 +1,40 @@
+{
+  "id": "proc-state-machine",
+  "title": "进程状态与转换",
+  "kind": "deterministic",
+  "entry": "solve",
+  "arg_names": ["events"],
+  "compare": "exact",
+  "cases": [
+    {
+      "name": "合法链：创建→就绪→运行→就绪→运行→终止",
+      "input": { "events": ["admit", "dispatch", "timeout", "dispatch", "exit"] },
+      "expected": "终止"
+    },
+    {
+      "name": "合法链：含阻塞与唤醒",
+      "input": { "events": ["admit", "dispatch", "wait", "wakeup", "dispatch", "exit"] },
+      "expected": "终止"
+    },
+    {
+      "name": "非法转换：就绪态不能直接 exit",
+      "input": { "events": ["admit", "exit"] },
+      "expected": "ERR"
+    },
+    {
+      "name": "非法转换：创建态不能直接 dispatch",
+      "input": { "events": ["dispatch"] },
+      "expected": "ERR"
+    },
+    {
+      "name": "非法转换：阻塞态不能 timeout",
+      "input": { "events": ["admit", "dispatch", "wait", "timeout"] },
+      "expected": "ERR"
+    },
+    {
+      "name": "空事件串：保持创建态",
+      "input": { "events": [] },
+      "expected": "创建"
+    }
+  ]
+}

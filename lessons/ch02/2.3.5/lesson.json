@@ -1,0 +1,12 @@
+{
+  "id": "2.3.5",
+  "chapter": "ch02",
+  "order": 21,
+  "title": "经典问题：生产者-消费者问题",
+  "subtitle": "有界缓冲区 · empty/full/mutex · PV 操作顺序",
+  "tags": ["高频", "动画", "代码"],
+  "difficulty": "重点",
+  "minutes": 40,
+  "exam": "生产者与消费者的同步与互斥关系；三个信号量的作用与初值；P、V 操作顺序；缺少或颠倒信号量导致的死锁",
+  "scenes": ["producer-consumer"]
+}

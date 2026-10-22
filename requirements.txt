@@ -1,0 +1,4 @@
+# OS_Train 运行与构建依赖
+# 安装时必须把 pip 缓存与临时目录指向 D 盘（见 tools/setup_env.ps1）
+PySide6>=6.6,<7
+pyinstaller>=6.0

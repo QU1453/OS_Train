@@ -1,0 +1,128 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "进程的三种基本状态是（　）。",
+      "options": [
+        "运行态、就绪态、阻塞态",
+        "创建态、就绪态、运行态",
+        "就绪态、阻塞态、终止态",
+        "创建态、运行态、终止态"
+      ],
+      "answer": 0,
+      "explain": "进程的<strong>三种基本状态</strong>是运行态、就绪态、阻塞态；加上创建态和终止态，共五种状态。A 正确。"
+    },
+    {
+      "id": "q2",
+      "stem": "区分就绪态与阻塞态的关键是（　）。",
+      "options": [
+        "就绪态进程占有了 CPU，阻塞态进程没有",
+        "就绪态进程只差 CPU，阻塞态进程在等待 CPU 以外的事件",
+        "就绪态进程在等待 I/O，阻塞态进程在等待 CPU",
+        "就绪态进程一定在内存中，阻塞态进程一定在内存外"
+      ],
+      "answer": 1,
+      "explain": "就绪态「万事俱备，<strong>只差 CPU</strong>」；阻塞态因等待某事件（如 I/O 完成）而暂停，<strong>即使给它 CPU 也不能运行</strong>。故 B 正确。两者都<strong>没有</strong>占有 CPU，A 错误；就绪态等的是 CPU 而非 I/O，C 错误；就绪与阻塞都与是否在内存无关，D 错误。"
+    },
+    {
+      "id": "q3",
+      "stem": "下列进程状态转换中，<strong>不可能</strong>发生的是（　）。",
+      "options": [
+        "运行态 → 就绪态",
+        "阻塞态 → 就绪态",
+        "阻塞态 → 运行态",
+        "运行态 → 阻塞态"
+      ],
+      "answer": 2,
+      "explain": "阻塞态进程等待的事件发生后，只能先被唤醒回到<strong>就绪态</strong>，再经调度才可能进入运行态，<strong>阻塞态不能直接转为运行态</strong>，故选 C。其余三项均可发生。"
+    },
+    {
+      "id": "q4",
+      "stem": "某进程执行过程中请求磁盘 I/O，在 I/O 完成前该进程的状态变化是（　）。",
+      "options": [
+        "运行态 → 就绪态",
+        "运行态 → 阻塞态",
+        "就绪态 → 阻塞态",
+        "阻塞态 → 就绪态"
+      ],
+      "answer": 1,
+      "explain": "只有处于<strong>运行态</strong>的进程才能<strong>主动</strong>请求 I/O 或资源而暂停，因此由运行态进入阻塞态，B 正确。就绪态不可能直接进入阻塞态（排除 C）；运行态→就绪态是时间片用完导致的（排除 A）。"
+    },
+    {
+      "id": "q5",
+      "stem": "下列关于进程状态转换的叙述中，<strong>正确</strong>的是（　）。",
+      "options": [
+        "就绪态进程可以直接转为阻塞态",
+        "进程被调度程序选中后由就绪态转为运行态",
+        "阻塞态进程被调度后直接转为运行态",
+        "终止态进程在系统资源充足时可重新转为就绪态"
+      ],
+      "answer": 1,
+      "explain": "就绪态→运行态由<strong>进程调度</strong>触发，B 正确。就绪态还没获得 CPU，不能直接因请求事件而阻塞，A 错误；阻塞态必须先回到就绪态再被调度，C 错误；终止态是进程生命的终点，不能再复活，D 错误。"
+    },
+    {
+      "id": "q6",
+      "stem": "某进程因等待 I/O 完成而阻塞，当 I/O 完成后，该进程通常转为（　）。",
+      "options": [
+        "运行态",
+        "就绪态",
+        "终止态",
+        "创建态"
+      ],
+      "answer": 1,
+      "explain": "I/O 完成由中断处理程序把等待它的进程<strong>从阻塞态唤醒</strong>，使其进入<strong>就绪态</strong>，等待被调度。能否马上运行取决于是否被调度程序选中，故不能直接转为运行态。"
+    },
+    {
+      "id": "q7",
+      "stem": "在单处理机系统中，下列关于进程状态的叙述中，<strong>正确</strong>的是（　）。",
+      "options": [
+        "同一时刻可以有多个进程处于运行态",
+        "处于就绪态的进程一定不占有 CPU",
+        "处于阻塞态的进程一旦获得 CPU 就能立即运行",
+        "运行态进程只能因时间片用完而转为就绪态"
+      ],
+      "answer": 1,
+      "explain": "单处理机同一时刻<strong>至多一个</strong>进程处于运行态，A 错误；就绪态进程尚未获得 CPU，B 正确；阻塞态进程因等待的事件未发生，<strong>即使获得 CPU 也无法运行</strong>，C 错误；运行态→就绪态还可由高优先级进程抢占引起，D 中「只能」错误。"
+    },
+    {
+      "id": "q8",
+      "stem": "下列关于进程状态转换触发事件的对应关系中，<strong>错误</strong>的是（　）。",
+      "options": [
+        "时间片用完：运行态 → 就绪态",
+        "等待的事件发生：阻塞态 → 就绪态",
+        "申请 I/O 设备：运行态 → 阻塞态",
+        "进程被调度程序选中：阻塞态 → 运行态"
+      ],
+      "answer": 3,
+      "explain": "进程被调度程序选中，是<strong>就绪态 → 运行态</strong>，而不是阻塞态→运行态，D 对应错误。A、B、C 三组对应关系均正确。"
+    },
+    {
+      "id": "q9",
+      "stem": "进程处于下列哪种状态时，既未占有 CPU，也不具备被调度的条件（　）。",
+      "options": [
+        "就绪态",
+        "运行态",
+        "阻塞态",
+        "终止态"
+      ],
+      "answer": 2,
+      "explain": "阻塞态进程<strong>没有 CPU 且因等待事件不具备运行条件</strong>，故不能被调度，C 正确。就绪态虽无 CPU 但已具备被调度的条件，A 不符；运行态占有 CPU，B 不符；终止态已消亡、不再是「等待被调度」的进程，D 不符。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "进程状态机：模拟单个进程的状态转换",
+      "prompt": "<p>给定一个<strong>事件串</strong> <code>events</code>，模拟<strong>单个进程</strong>的状态转换。进程<strong>初始状态为「创建」</strong>，可用事件及合法转换如下：</p><ul><li><code>admit</code>：创建 → 就绪</li><li><code>dispatch</code>：就绪 → 运行</li><li><code>timeout</code>：运行 → 就绪</li><li><code>wait</code>：运行 → 阻塞</li><li><code>wakeup</code>：阻塞 → 就绪</li><li><code>exit</code>：运行 → 终止</li></ul><p>按顺序处理事件：<strong>只要出现一次当前状态下不允许的事件（非法转换），立即返回字符串 <code>\"ERR\"</code> 并停止处理</strong>；若全部合法，返回处理结束后的<strong>最终状态中文名</strong>（<code>创建 / 就绪 / 运行 / 阻塞 / 终止</code>）。</p>",
+      "c_reference": "#include <stdio.h>\n#include <string.h>\n\n/* 单步转换：合法则返回目标状态名，非法返回 NULL */\nstatic const char *transit(const char *state, const char *ev) {\n    if (!strcmp(state, \"创建\") && !strcmp(ev, \"admit\"))    return \"就绪\";\n    if (!strcmp(state, \"就绪\") && !strcmp(ev, \"dispatch\")) return \"运行\";\n    if (!strcmp(state, \"运行\") && !strcmp(ev, \"timeout\"))  return \"就绪\";\n    if (!strcmp(state, \"运行\") && !strcmp(ev, \"wait\"))     return \"阻塞\";\n    if (!strcmp(state, \"阻塞\") && !strcmp(ev, \"wakeup\"))   return \"就绪\";\n    if (!strcmp(state, \"运行\") && !strcmp(ev, \"exit\"))     return \"终止\";\n    return NULL; /* 非法转换 */\n}\n\n/* events: 事件数组；n: 事件个数。返回最终状态名或 \"ERR\" */\nconst char *solve(const char *events[], int n) {\n    const char *state = \"创建\";\n    for (int i = 0; i < n; ++i) {\n        const char *nxt = transit(state, events[i]);\n        if (nxt == NULL) return \"ERR\";\n        state = nxt;\n    }\n    return state;\n}\n",
+      "python_reference": "# 状态 -> {事件 -> 目标状态} 的转换表\nTRANSITIONS = {\n    \"创建\": {\"admit\": \"就绪\"},\n    \"就绪\": {\"dispatch\": \"运行\"},\n    \"运行\": {\"timeout\": \"就绪\", \"wait\": \"阻塞\", \"exit\": \"终止\"},\n    \"阻塞\": {\"wakeup\": \"就绪\"},\n    \"终止\": {},\n}\n\n\ndef solve(events):\n    state = \"创建\"\n    for ev in events:\n        nxt = TRANSITIONS.get(state, {}).get(ev)\n        if nxt is None:\n            # 出现非法转换：立即返回 ERR，不再继续处理\n            return \"ERR\"\n        state = nxt\n    return state\n",
+      "starter_python": "def solve(events):\n    # 初始状态为「创建」，依次处理每个事件\n    # 合法转换：\n    #   创建 --admit-->  就绪\n    #   就绪 --dispatch--> 运行\n    #   运行 --timeout--> 就绪\n    #   运行 --wait-->    阻塞\n    #   阻塞 --wakeup-->  就绪\n    #   运行 --exit-->    终止\n    # 出现非法转换立即返回 \"ERR\"；全部合法则返回最终状态中文名\n    state = \"创建\"\n    # TODO: 遍历 events，按转换表更新 state，遇到非法转换返回 \"ERR\"\n    pass\n",
+      "judge_problem_id": "proc-state-machine",
+      "hints": [
+        "用「状态 → {事件 → 目标状态}」的嵌套字典表示转换表，查不到即非法。",
+        "非法转换要立即 return \"ERR\"，不要再继续处理后面的合法事件。",
+        "空事件串应返回初始状态「创建」。"
+      ]
+    }
+  ]
+}

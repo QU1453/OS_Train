@@ -1,0 +1,70 @@
+{
+  "id": "sched-algorithms",
+  "title": "调度算法（FCFS / SJF / HRRN）",
+  "kind": "deterministic",
+  "entry": "solve",
+  "arg_names": ["jobs", "algo"],
+  "compare": "exact",
+  "cases": [
+    {
+      "name": "FCFS：到达早者先执行",
+      "input": {
+        "jobs": [
+          { "name": "A", "arrival": 0, "service": 4 },
+          { "name": "B", "arrival": 1, "service": 3 },
+          { "name": "C", "arrival": 2, "service": 2 }
+        ],
+        "algo": "FCFS"
+      },
+      "expected": ["A", "B", "C"]
+    },
+    {
+      "name": "SJF：就绪集中服务短者先执行",
+      "input": {
+        "jobs": [
+          { "name": "A", "arrival": 0, "service": 4 },
+          { "name": "B", "arrival": 1, "service": 3 },
+          { "name": "C", "arrival": 2, "service": 2 }
+        ],
+        "algo": "SJF"
+      },
+      "expected": ["A", "C", "B"]
+    },
+    {
+      "name": "HRRN：响应比相同则取服务短者",
+      "input": {
+        "jobs": [
+          { "name": "A", "arrival": 0, "service": 4 },
+          { "name": "B", "arrival": 1, "service": 3 },
+          { "name": "C", "arrival": 2, "service": 2 }
+        ],
+        "algo": "HRRN"
+      },
+      "expected": ["A", "C", "B"]
+    },
+    {
+      "name": "SJF：短作业插队（长作业已等待仍让位于短作业）",
+      "input": {
+        "jobs": [
+          { "name": "F", "arrival": 0, "service": 15 },
+          { "name": "L", "arrival": 1, "service": 10 },
+          { "name": "S", "arrival": 14, "service": 1 }
+        ],
+        "algo": "SJF"
+      },
+      "expected": ["F", "S", "L"]
+    },
+    {
+      "name": "HRRN：久等长作业响应比更高而先执行",
+      "input": {
+        "jobs": [
+          { "name": "F", "arrival": 0, "service": 15 },
+          { "name": "L", "arrival": 1, "service": 10 },
+          { "name": "S", "arrival": 14, "service": 1 }
+        ],
+        "algo": "HRRN"
+      },
+      "expected": ["F", "L", "S"]
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "下列调度算法中，<strong>属于非抢占式</strong>的是（　）。",
+      "options": [
+        "时间片轮转算法",
+        "先来先服务算法",
+        "抢占式优先级调度算法",
+        "最短剩余时间优先算法"
+      ],
+      "answer": 1,
+      "explain": "<strong>先来先服务 FCFS</strong> 是非抢占式的：一旦分配 CPU 就让进程运行到完成或阻塞，B 正确。时间片轮转 RR 由时钟中断剥夺 CPU，属于抢占式；抢占式优先级调度、最短剩余时间优先（抢占式 SJF）也都是抢占式，A、C、D 错误。"
+    },
+    {
+      "id": "q2",
+      "stem": "在所有作业<strong>同时到达</strong>的情况下，能使平均等待时间最小的调度算法是（　）。",
+      "options": [
+        "先来先服务 FCFS",
+        "短作业优先 SJF",
+        "时间片轮转 RR",
+        "多级反馈队列"
+      ],
+      "answer": 1,
+      "explain": "在作业<strong>同时到达</strong>的前提下，<strong>短作业优先 SJF</strong> 能得到最小的<strong>平均等待时间</strong>和平均周转时间，这是 SJF 的经典结论，B 正确。该最优性依赖于「同时到达」这一前提。"
+    },
+    {
+      "id": "q3",
+      "stem": "高响应比优先算法中，响应比的计算公式为（　）。",
+      "options": [
+        "(等待时间 + 服务时间) / 服务时间",
+        "(等待时间 + 服务时间) / 等待时间",
+        "等待时间 / 服务时间",
+        "服务时间 / 等待时间"
+      ],
+      "answer": 0,
+      "explain": "<strong>响应比 = (等待时间 + 要求服务时间) / 要求服务时间 = 1 + 等待时间/服务时间</strong>，A 正确。它同时体现「等待越久越优先」和「服务越短越优先」，从而兼顾长短作业、避免饥饿。"
+    },
+    {
+      "id": "q4",
+      "stem": "下列调度算法中，可能导致<strong>饥饿（某进程长期得不到调度）</strong>的是（　）。<br>Ⅰ. 短作业优先 SJF　Ⅱ. 固定优先级调度　Ⅲ. 时间片轮转 RR",
+      "options": [
+        "仅Ⅰ和Ⅱ",
+        "仅Ⅰ和Ⅲ",
+        "仅Ⅱ和Ⅲ",
+        "Ⅰ、Ⅱ和Ⅲ"
+      ],
+      "answer": 0,
+      "explain": "若不断有更短的作业到达，<strong>SJF</strong> 会使长作业长期得不到调度而饥饿（Ⅰ）；采用<strong>固定优先级</strong>时，低优先级进程可能长期得不到 CPU 而饥饿（Ⅱ）。<strong>时间片轮转 RR</strong> 每个进程都能轮流获得时间片，<strong>不会饥饿</strong>（Ⅲ 不符），故选 A。"
+    },
+    {
+      "id": "q5",
+      "stem": "在时间片轮转（RR）算法中，若时间片设置得<strong>过大</strong>，则（　）。",
+      "options": [
+        "系统开销显著增大",
+        "算法退化为先来先服务 FCFS",
+        "所有进程都不再需要等待",
+        "算法变为抢占式优先级调度"
+      ],
+      "answer": 1,
+      "explain": "时间片过大时，进程往往能在「一个时间片内」就运行完毕，不会频繁回到队尾轮转，此时 RR 的行为<strong>退化为 FCFS</strong>，响应时间变长，B 正确。时间片<strong>过小</strong>才会使切换频繁、开销增大（A 说反）。"
+    },
+    {
+      "id": "q6",
+      "stem": "分时（交互式）系统中最常采用的调度算法是（　）。",
+      "options": [
+        "先来先服务 FCFS",
+        "短作业优先 SJF",
+        "时间片轮转 RR",
+        "高响应比优先 HRRN"
+      ],
+      "answer": 2,
+      "explain": "分时系统要求对每个用户的请求都能<strong>及时响应</strong>，因此采用<strong>时间片轮转 RR</strong>，让各进程轮流获得时间片，保证公平与及时，C 正确。FCFS、SJF 响应不及时，HRRN 也非面向交互场景。"
+    },
+    {
+      "id": "q7",
+      "stem": "关于多级反馈队列调度算法，下列叙述中<strong>错误</strong>的是（　）。",
+      "options": [
+        "队列优先级从第 1 级到后面逐级降低",
+        "各队列的时间片通常逐级增大",
+        "进程用完某级时间片仍未完成，则降到下一级队列队尾",
+        "进程只要进入某个队列，就永远留在该队列中"
+      ],
+      "answer": 3,
+      "explain": "多级反馈队列允许进程在<strong>各队列之间动态移动</strong>：用完时间片未完成就<strong>降级</strong>，被高优先级抢占也可能调整，并非固定在某一队列，D 错误。A、B、C 都是多级反馈队列的正确规则。"
+    },
+    {
+      "id": "q8",
+      "stem": "某系统有作业 A（到达 0，服务 4）、B（到达 1，服务 3）、C（到达 2，服务 2），采用<strong>非抢占式 SJF</strong>（当前作业运行完后，才在当前已到达作业中选最短者）。则执行顺序为（　）。",
+      "options": [
+        "A → B → C",
+        "A → C → B",
+        "B → A → C",
+        "C → B → A"
+      ],
+      "answer": 1,
+      "explain": "0 时刻只有 A 到达，先运行 A（0→4）。A 结束后（t=4）已到达的有 B、C，<strong>服务时间 C(2) < B(3)</strong>，故选 C 运行（4→6），最后运行 B。执行顺序为 <strong>A → C → B</strong>，B 选项正确。"
+    },
+    {
+      "id": "q9",
+      "stem": "下列关于短作业优先（SJF）算法的叙述中，<strong>正确</strong>的是（　）。",
+      "options": [
+        "SJF 一定是抢占式的",
+        "无论作业何时到达，SJF 都能保证平均周转时间最小",
+        "SJF 可能使长作业长期得不到调度",
+        "SJF 的时间片随队列级别增大而增大"
+      ],
+      "answer": 2,
+      "explain": "SJF 存在<strong>非抢占式</strong>和<strong>抢占式（SRTN）</strong>两种，A 错误；SJF 的「平均周转时间最小」只在<strong>所有作业同时到达</strong>时成立，B 的「无论何时到达」错误；长作业可能被不断到来的短作业「插队」而长期得不到调度，C 正确；时间片随级别增大是多级反馈队列的特点，与 SJF 无关，D 错误。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "调度算法：FCFS / SJF / HRRN 的执行顺序",
+      "prompt": "<p>给定若干作业 <code>jobs</code>，每个作业是字典 <code>{'name': 名字, 'arrival': 到达时间, 'service': 服务时间}</code>，另有算法参数 <code>algo</code>，取值为 <code>\"FCFS\"</code>、<code>\"SJF\"</code> 或 <code>\"HRRN\"</code>。</p><p>采用<strong>非抢占式</strong>调度：一次只运行一个作业直到完成；每次在当前时刻<strong>已经到达</strong>的未完成作业中选一个执行；若当前时刻没有已到达的作业，则把时间推进到剩余作业中<strong>最早的到达时刻</strong>。</p><p>选择规则（并列时以<strong>输入下标小者</strong>优先）：</p><ul><li><code>FCFS</code>：选<strong>到达时间最早</strong>者；</li><li><code>SJF</code>：选<strong>服务时间最短</strong>者（并列取到达早、再取下标小）；</li><li><code>HRRN</code>：选<strong>响应比</strong> <code>(等待 + 服务) / 服务</code> 最大者（并列取服务短、再取下标小），其中 <code>等待 = 当前时刻 - 到达时间</code>。</li></ul><p>返回按执行先后排列的<strong>作业名字列表</strong>。</p>",
+      "c_reference": "#include <string.h>\n#include <stdio.h>\n\ntypedef struct { const char *name; double arrival; double service; } Job;\n\n/* jobs: 作业数组；n: 作业数；algo: \"FCFS\" / \"SJF\" / \"HRRN\"\n * out:  输出作业名顺序；返回作业数 n */\nint solve(const Job *jobs, int n, const char *algo, const char **out) {\n    int done[256] = {0};\n    double t = 0.0;\n\n    for (int step = 0; step < n; ++step) {\n        /* 找当前已到达且未完成的作业中最优者 */\n        int pick = -1;\n        for (int i = 0; i < n; ++i) {\n            if (done[i] || jobs[i].arrival > t) continue;\n            if (pick == -1) { pick = i; continue; }\n\n            int better = 0;\n            if (!strcmp(algo, \"FCFS\")) {\n                better = (jobs[i].arrival < jobs[pick].arrival);\n            } else if (!strcmp(algo, \"SJF\")) {\n                if (jobs[i].service != jobs[pick].service)\n                    better = (jobs[i].service < jobs[pick].service);\n                else\n                    better = (jobs[i].arrival < jobs[pick].arrival);\n            } else { /* HRRN */\n                double ri = (t - jobs[i].arrival + jobs[i].service) / jobs[i].service;\n                double rp = (t - jobs[pick].arrival + jobs[pick].service) / jobs[pick].service;\n                if (ri != rp) better = (ri > rp);\n                else better = (jobs[i].service < jobs[pick].service);\n            }\n            if (better) pick = i;\n        }\n\n        if (pick == -1) {\n            /* 当前无就绪作业：时间推进到最早到达者 */\n            double nxt = -1;\n            for (int i = 0; i < n; ++i)\n                if (!done[i] && (nxt < 0 || jobs[i].arrival < nxt)) nxt = jobs[i].arrival;\n            t = nxt;\n            step--; /* 重新为本轮选择 */\n            continue;\n        }\n\n        done[pick] = 1;\n        out[step] = jobs[pick].name;\n        if (jobs[pick].arrival > t) t = jobs[pick].arrival;\n        t += jobs[pick].service;\n    }\n    return n;\n}\n",
+      "python_reference": "def solve(jobs, algo):\n    n = len(jobs)\n    done = [False] * n\n    order = []\n    t = 0\n\n    for _ in range(n):\n        # 当前已到达且未完成的作业\n        avail = [i for i in range(n) if not done[i] and jobs[i][\"arrival\"] <= t]\n        if not avail:\n            # 时间推进到最早到达的作业\n            t = min(jobs[i][\"arrival\"] for i in range(n) if not done[i])\n            avail = [i for i in range(n) if not done[i] and jobs[i][\"arrival\"] <= t]\n\n        if algo == \"FCFS\":\n            pick = min(avail, key=lambda i: (jobs[i][\"arrival\"], i))\n        elif algo == \"SJF\":\n            pick = min(avail, key=lambda i: (jobs[i][\"service\"], jobs[i][\"arrival\"], i))\n        elif algo == \"HRRN\":\n            def ratio(i):\n                j = jobs[i]\n                wait = t - j[\"arrival\"]\n                return (wait + j[\"service\"]) / j[\"service\"]\n            # 响应比大者优先；并列取服务短；再并列取下标小\n            pick = min(avail, key=lambda i: (-ratio(i), jobs[i][\"service\"], i))\n        else:\n            raise ValueError(\"未知调度算法：\" + str(algo))\n\n        done[pick] = True\n        order.append(jobs[pick][\"name\"])\n        t = max(t, jobs[pick][\"arrival\"]) + jobs[pick][\"service\"]\n\n    return order\n",
+      "starter_python": "def solve(jobs, algo):\n    # jobs: [{'name':..,'arrival':..,'service':..}, ...]\n    # algo: 'FCFS' | 'SJF' | 'HRRN'（均为非抢占式）\n    # 规则：\n    #   FCFS  选到达时间最早者\n    #   SJF   选服务时间最短者（并列取到达早、再取下标小）\n    #   HRRN  选响应比 (等待+服务)/服务 最大者（并列取服务短、再取下标小）\n    #         等待 = 当前时刻 t - arrival\n    #   若当前时刻无已到达作业，则把 t 推进到剩余作业最早的到达时刻\n    # 返回按执行先后排列的 name 列表\n    n = len(jobs)\n    done = [False] * n\n    order = []\n    t = 0\n    # TODO: 每轮在 avail 中按 algo 选出 pick，更新 done / order / t\n    return order\n",
+      "judge_problem_id": "sched-algorithms",
+      "hints": [
+        "先求出 avail = 已到达(arrival<=t)且未完成的作业；若为空则把 t 推进到最早到达时刻。",
+        "并列取舍用下标 i 作为最后判据（下标小者优先）。",
+        "每轮结束更新 t = max(t, arrival) + service，然后进入下一轮。"
+      ]
+    }
+  ]
+}

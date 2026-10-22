@@ -1,0 +1,148 @@
+<h2>1. 死锁避免的基本思想</h2>
+
+<p>死锁的三种处理策略各有侧重：<strong>死锁预防</strong>（2.4.2 节）通过破坏四个必要条件之一，使死锁<strong>根本不可能发生</strong>，但往往牺牲了资源利用率；<strong>死锁检测</strong>（2.4.4 节）则先放任死锁发生，再回头检测与解除。</p>
+
+<p>介于二者之间的，是<strong>死锁避免</strong>：它在资源分配过程中<strong>动态地判断</strong>——若本次分配会导致系统进入<strong>不安全状态</strong>，就<strong>暂不分配</strong>，让进程等待，从而使系统始终保持在安全状态。死锁避免<strong>不破坏四个必要条件</strong>，而是用「事前判断」来绕开死锁，因此比死锁预防允许更高的并发度，代价是需要预知每个进程的<strong>最大资源需求</strong>并付出计算开销。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义：安全状态与安全序列</div>
+  <p>所谓<strong>安全状态</strong>，是指系统能按<strong>某种进程推进顺序</strong>为每个进程分配其所需的资源，直至所有进程都能获得所需资源并顺利运行完成。此时存在一个<strong>安全序列</strong>：一个进程的排列 <span class="formula-inline">P<sub>1</sub>, P<sub>2</sub>, …, P<sub>n</sub></span>，使得按此顺序依次满足每个进程的最大需求，系统都不会因资源不足而失败。若<strong>找不到</strong>这样的安全序列，则称系统处于<strong>不安全状态</strong>。</p>
+</div>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>① <strong>安全状态一定不发生死锁</strong>；② 不安全状态<strong>不一定</strong>发生死锁（只是「可能」发生死锁，因为进程可能不会一次性申请完最大需求）；③ 死锁状态一定是<strong>不安全状态</strong>。三者的包含关系为：<strong>死锁 ⊂ 不安全 ⊂ 全部状态</strong>。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>「不安全状态」与「死锁」不能画等号。处于不安全状态时，只要进程按照安全序列之外的某种顺序申请资源，才<strong>可能</strong>死锁；若进程恰好没有同时申请到最大需求，也可能平安结束。因此做题时问「是否安全」就要<strong>严格找安全序列</strong>，找不到才判不安全。</p>
+</div>
+
+<h2>2. 银行家算法：数据结构</h2>
+
+<p>银行家算法（Banker's Algorithm）是死锁避免的经典实现。它把系统比作银行家，进程比作借款人，资源比作资金。设系统有 <strong>n 个进程</strong>、<strong>m 类资源</strong>，需要维护以下数据结构：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>数据结构</th><th>含义</th><th>规模</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Available</strong></td><td>系统当前各类资源的<strong>可用数量</strong>（尚未分配出去的）</td><td>长度 m 的一维向量</td></tr>
+    <tr><td><strong>Max</strong></td><td>每个进程对各类资源的<strong>最大需求</strong></td><td>n × m 的矩阵</td></tr>
+    <tr><td><strong>Allocation</strong></td><td>已分配给每个进程的各类资源数量</td><td>n × m 的矩阵</td></tr>
+    <tr><td><strong>Need</strong></td><td>每个进程<strong>尚需</strong>的各类资源数量</td><td>n × m 的矩阵</td></tr>
+    <tr><td><strong>Request</strong></td><td>进程本次<strong>请求</strong>的各类资源数量</td><td>长度 m 的一维向量</td></tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：三个恒等式</div>
+  <p>① <span class="formula-inline"><strong>Need[i][j] = Max[i][j] − Allocation[i][j]</strong></span>（每个进程还需要的 = 最大需求 − 已分配）；<br>② <span class="formula-inline"><strong>Available[j] = 系统资源总量[j] − Σ<sub>i</sub> Allocation[i][j]</strong></span>（可用 = 总量 − 已分配总量）；<br>③ 任一时刻满足 <span class="formula-inline">Need[i][j] ≥ 0</span>。</p>
+</div>
+
+<h2>3. 安全性算法（判断是否安全）</h2>
+
+<p>安全性算法的目标是<strong>找出一个安全序列</strong>，其核心是维护一个「试探性」的工作向量 <strong>Work</strong>（初始时 <span class="formula-inline">Work = Available</span>）和一个完成标志数组 <strong>Finish</strong>（初始全为 false）。步骤如下：</p>
+
+<pre class="formula">① 初始化：Work = Available；Finish[i] = false（i = 0,1,…,n−1）。
+② 在所有满足 Finish[i] == false 的进程中，寻找一个满足
+        Need[i][j] ≤ Work[j]   (对一切 j = 0,1,…,m−1)
+   的进程 i，即“它需要的资源当前都能满足”。
+③ 若找到这样的 i：
+        令 Work = Work + Allocation[i]；   // 进程 i 结束，归还它已占的资源
+        Finish[i] = true；把 i 记入安全序列；
+        转回 ②。
+   若找不到：
+        转 ④。
+④ 若所有 Finish[i] 均为 true，则系统处于安全状态，步骤中记录的进程顺序即一个安全序列；
+   否则系统处于不安全状态（此时已找出的只是“可完成前缀”）。</pre>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p>安全性检查记「<strong>比 Need、给 Work、标 Finish</strong>」：比当前进程的 Need 是否 ≤ Work；满足就让它跑完并<strong>归还</strong>其 Allocation（Work 加上去）；标记 Finish 并放进序列；重复直到所有进程都能完成。</p>
+</div>
+
+<h2>4. 经典例题（408 高频）</h2>
+
+<p>设系统有 5 个进程 <span class="formula-inline">P0~P4</span> 和 3 类资源 <span class="formula-inline">A、B、C</span>，某时刻的状态如下（已知资源总量为 A=10、B=5、C=7）：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>进程</th><th>Allocation (A B C)</th><th>Max (A B C)</th><th>Need (A B C)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>P0</td><td>0 1 0</td><td>7 5 3</td><td>7 4 3</td></tr>
+    <tr><td>P1</td><td>2 0 0</td><td>3 2 2</td><td>1 2 2</td></tr>
+    <tr><td>P2</td><td>3 0 2</td><td>9 0 2</td><td>6 0 0</td></tr>
+    <tr><td>P3</td><td>2 1 1</td><td>2 2 2</td><td>0 1 1</td></tr>
+    <tr><td>P4</td><td>0 0 2</td><td>4 3 3</td><td>4 3 1</td></tr>
+  </tbody>
+</table>
+
+<p>此时 <span class="formula-inline">Available = 总量 − ΣAllocation = (10−7, 5−2, 7−5) = (3, 3, 2)</span>。按安全性算法检查：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>步骤</th><th>Work (A B C)</th><th>可选进程</th><th>完成后 Work += Alloc</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>初始</td><td>3 3 2</td><td>P1 (1 2 2 ≤ 3 3 2)</td><td>3 3 2 + 2 0 0 = <strong>5 3 2</strong></td></tr>
+    <tr><td>2</td><td>5 3 2</td><td>P3 (0 1 1 ≤ 5 3 2)</td><td>5 3 2 + 2 1 1 = <strong>7 4 3</strong></td></tr>
+    <tr><td>3</td><td>7 4 3</td><td>P0 (7 4 3 ≤ 7 4 3)</td><td>7 4 3 + 0 1 0 = <strong>7 5 3</strong></td></tr>
+    <tr><td>4</td><td>7 5 3</td><td>P2 (6 0 0 ≤ 7 5 3)</td><td>7 5 3 + 3 0 2 = <strong>10 5 5</strong></td></tr>
+    <tr><td>5</td><td>10 5 5</td><td>P4 (4 3 1 ≤ 10 5 5)</td><td>10 5 5 + 0 0 2 = <strong>10 5 7</strong></td></tr>
+  </tbody>
+</table>
+
+<p>所有进程都能完成，故系统处于<strong>安全状态</strong>，一个安全序列为 <strong>P1 → P3 → P0 → P2 → P4</strong>（即 <span class="formula-inline">[1, 3, 0, 2, 4]</span>）。</p>
+
+<div class="blk warn">
+  <div class="blk__label">易错点：如何保证安全序列“唯一/规范”</div>
+  <p>一个状态的<strong>安全序列可能不唯一</strong>，考试与判题通常约定：每次在<strong>所有可完成的进程中选取下标最小</strong>的那个。按此规则本例得到 <span class="formula-inline">[1, 3, 0, 2, 4]</span>。若每一步都选最小下标，结果就是确定的。</p>
+</div>
+
+<h2>5. 资源请求算法</h2>
+
+<p>当进程 <span class="formula-inline">P<sub>i</sub></span> 提出请求 <span class="formula-inline">Request<sub>i</sub></span> 时，银行家算法按下列顺序检查，全部通过才真正分配：</p>
+
+<pre class="formula">① 若 Request[i][j] ≤ Need[i][j]（对一切 j），转 ②；
+   否则说明请求量超过了它声明的最大需求，视为出错。
+② 若 Request[i][j] ≤ Available[j]（对一切 j），转 ③；
+   否则当前资源不足，P[i] 必须等待。
+③ “试探性分配”：
+        Available  = Available  − Request[i]
+        Allocation[i] = Allocation[i] + Request[i]
+        Need[i]        = Need[i]        − Request[i]
+④ 执行安全性算法。若分配后系统仍安全，则正式分配；
+   若分配后系统变得不安全，则撤销试探性分配，恢复原状态，让 P[i] 等待。</pre>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>死锁避免的本质是：<strong>每次分配前都做一次安全性预演</strong>，只有分配后仍存在安全序列才真正分配。这也解释了它的缺点——需要预知 Max、计算量大、并发度受限。</p>
+</div>
+
+<h2>6. 动画演示</h2>
+
+<p>下面的演示将逐步展示银行家算法中 Work 向量的增长与安全序列的形成过程。</p>
+
+<div class="scene" data-scene="banker"></div>
+
+<h2>7. 小结与真题问法</h2>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 给出一张 Allocation / Max 表，求 Need 与 Available，判断是否安全并写出安全序列；<br>② 给一次具体请求 Request，问能否分配——先查 Request ≤ Need、Request ≤ Available，再做安全性检查；<br>③ 判断「不安全状态是否一定死锁」——<strong>不一定</strong>；「安全状态是否一定不死锁」——<strong>一定</strong>；<br>④ 问银行家算法属于哪种策略——<strong>死锁避免</strong>（不是预防、也不是检测）。</p>
+</div>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p>「<strong>Max 减 Allocation 得 Need，总量减 Alloc 得 Available；Work 从 Available 起，Need ≤ Work 就还资源，全部完成才安全。</strong>」请求三连问：超没超 Need？够不够 Available？分配后还安全吗？</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>银行家算法是最著名的死锁避免算法。它在分配资源之前先计算本次分配是否会导致系统进入不安全状态，若不会进入不安全状态，才进行分配。系统处于安全状态时一定不会发生死锁；处于不安全状态时则可能发生死锁。</p>
+</div>
+
+<p>完成下方选择题后，进入下一节 <strong>2.4.4 死锁检测与解除</strong>。</p>

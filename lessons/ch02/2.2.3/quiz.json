@@ -1,0 +1,116 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "作业周转时间的定义是（　）。",
+      "options": [
+        "作业开始运行到运行结束的时间",
+        "作业完成时间减去作业到达（提交）时间",
+        "作业在就绪队列中等待的时间",
+        "作业实际占用 CPU 的时间"
+      ],
+      "answer": 1,
+      "explain": "<strong>周转时间 = 完成时间 − 到达时间</strong>，是作业从提交到完成的全部时间，B 正确。它包含了等待时间与执行时间，因此不只是「运行时间」（A、D）或「等待时间」（C）。"
+    },
+    {
+      "id": "q2",
+      "stem": "带权周转时间的计算方法是（　）。",
+      "options": [
+        "周转时间 ÷ 等待时间",
+        "周转时间 ÷ 作业实际运行（服务）时间",
+        "等待时间 ÷ 服务时间",
+        "服务时间 ÷ 周转时间"
+      ],
+      "answer": 1,
+      "explain": "<strong>带权周转时间 = 周转时间 ÷ 服务时间</strong>，表示周转时间是实际运行时间的倍数，B 正确。由于周转时间 = 等待时间 + 服务时间 ≥ 服务时间，其值<strong>恒 ≥ 1</strong>，D 是它的倒数，错误。"
+    },
+    {
+      "id": "q3",
+      "stem": "下列关于带权周转时间的叙述中，<strong>正确</strong>的是（　）。",
+      "options": [
+        "带权周转时间可能小于 1",
+        "带权周转时间恒大于等于 1",
+        "带权周转时间就是等待时间",
+        "带权周转时间越大说明算法越好"
+      ],
+      "answer": 1,
+      "explain": "周转时间 = 等待时间 + 服务时间，且等待时间 ≥ 0，故<strong>带权周转时间 = 周转时间/服务时间 ≥ 1</strong>，B 正确、A 错误；它与等待时间含义不同，C 错误；带权周转时间<strong>越小越好</strong>，D 错误。"
+    },
+    {
+      "id": "q4",
+      "stem": "某作业到达时间为 2，服务时间为 5，它的完成时间为 11。则该作业的周转时间和带权周转时间分别为（　）。",
+      "options": [
+        "周转时间 9，带权周转时间 1.8",
+        "周转时间 5，带权周转时间 1.0",
+        "周转时间 11，带权周转时间 2.2",
+        "周转时间 9，带权周转时间 2.25"
+      ],
+      "answer": 0,
+      "explain": "周转时间 = 完成时间 − 到达时间 = 11 − 2 = <strong>9</strong>；带权周转时间 = 周转时间 ÷ 服务时间 = 9 ÷ 5 = <strong>1.8</strong>，故选 A。（注意 D 用的是 9/4，服务时间取错了。）"
+    },
+    {
+      "id": "q5",
+      "stem": "关于等待时间，下列叙述中<strong>正确</strong>的是（　）。",
+      "options": [
+        "等待时间等于周转时间",
+        "等待时间等于周转时间减去服务时间",
+        "等待时间包含作业自身的执行时间",
+        "等待时间不受调度算法影响"
+      ],
+      "answer": 1,
+      "explain": "作业等待时间 = 周转时间 − 服务时间（即开始时间 − 到达时间），只统计「等待」部分，B 正确、A 与 C 错误。调度算法恰好主要影响的是<strong>等待时间</strong>，D 说反了。"
+    },
+    {
+      "id": "q6",
+      "stem": "下列指标中，<strong>越大越好</strong>的是（　）。<br>Ⅰ. CPU 利用率　Ⅱ. 系统吞吐量　Ⅲ. 平均周转时间",
+      "options": [
+        "仅Ⅰ和Ⅱ",
+        "仅Ⅰ和Ⅲ",
+        "仅Ⅱ和Ⅲ",
+        "Ⅰ、Ⅱ和Ⅲ"
+      ],
+      "answer": 0,
+      "explain": "CPU 利用率与系统吞吐量<strong>越大越好</strong>（Ⅰ、Ⅱ）；而平均周转时间、平均带权周转时间、等待时间、响应时间都是<strong>越小越好</strong>（Ⅲ 不符），故选 A。"
+    },
+    {
+      "id": "q7",
+      "stem": "交互式（分时）系统中，用户通常最关心的评价指标是（　）。",
+      "options": [
+        "系统吞吐量",
+        "响应时间",
+        "带权周转时间",
+        "CPU 利用率"
+      ],
+      "answer": 1,
+      "explain": "交互式系统强调「用户请求后系统多快给出第一次响应」，因此最关心<strong>响应时间</strong>，B 正确。吞吐量、CPU 利用率是面向系统的效率指标，带权周转时间面向批处理作业，均不是交互系统首要关注的。"
+    },
+    {
+      "id": "q8",
+      "stem": "关于 CPU 利用率与系统吞吐量，下列叙述中，<strong>错误</strong>的是（　）。",
+      "options": [
+        "CPU 利用率 = CPU 忙碌时间 ÷ 总时间",
+        "系统吞吐量 = 单位时间内完成的作业数",
+        "CPU 利用率只统计用户程序的运行时间，不含内核",
+        "提高系统吞吐量意味着单位时间内完成更多作业"
+      ],
+      "answer": 2,
+      "explain": "CPU 利用率统计的是<strong>CPU 忙碌（含用户程序和内核程序运行）时间</strong>占总时间的比例，C 说「不含内核」是错误的。A、B、D 关于 CPU 利用率与吞吐量的定义均正确。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "调度评价指标：计算平均周转时间等三项指标",
+      "prompt": "<p>给定若干作业 <code>jobs</code>，每个作业是字典 <code>{'name': 名字, 'arrival': 到达时间, 'service': 服务时间}</code>。这些作业<strong>按给定顺序、非抢占地依次执行</strong>（一次只运行一个作业，当前作业完成后才运行下一个）。</p><p>维护当前时间 <code>t</code>（初值 0），对每个作业计算：</p><pre class=\"formula\">start = max(t, arrival)\nfinish = start + service\nturnaround          = finish - arrival\ntt_weighted = turnaround / service\nwaiting             = turnaround - service      # 等价于 start - arrival\nt = finish</pre><p>请返回三项<strong>平均值</strong>构成的字典：</p><pre class=\"formula\">{'avg_turnaround': ..., 'avg_weighted_turnaround': ..., 'avg_waiting': ...}</pre>",
+      "c_reference": "#include <stdio.h>\n\ntypedef struct { const char *name; double arrival; double service; } Job;\n\n/* 返回平均周转时间，并通过指针输出带权与等待的平均值 */\ndouble solve(const Job *jobs, int n,\n             double *avg_weighted, double *avg_waiting) {\n    double t = 0.0;\n    double sum_turn = 0.0, sum_weighted = 0.0, sum_wait = 0.0;\n\n    for (int i = 0; i < n; ++i) {\n        double arrival = jobs[i].arrival;\n        double service = jobs[i].service;\n\n        double start  = (t > arrival) ? t : arrival;   /* max(t, arrival) */\n        double finish = start + service;\n        double turnaround = finish - arrival;\n\n        sum_turn     += turnaround;\n        sum_weighted += turnaround / service;\n        sum_wait     += turnaround - service;\n\n        t = finish;\n    }\n\n    *avg_weighted = sum_weighted / n;\n    *avg_waiting  = sum_wait / n;\n    return sum_turn / n;\n}\n",
+      "python_reference": "def solve(jobs):\n    t = 0.0                 # 当前时间\n    n = len(jobs)\n    sum_turn = 0.0          # 周转时间之和\n    sum_weighted = 0.0      # 带权周转时间之和\n    sum_wait = 0.0          # 等待时间之和\n\n    for job in jobs:\n        arrival = job[\"arrival\"]\n        service = job[\"service\"]\n\n        start = max(t, arrival)          # 若 CPU 空闲则等到到达\n        finish = start + service\n        turnaround = finish - arrival\n\n        sum_turn += turnaround\n        sum_weighted += turnaround / service\n        sum_wait += turnaround - service  # 等价于 start - arrival\n\n        t = finish\n\n    return {\n        \"avg_turnaround\": sum_turn / n,\n        \"avg_weighted_turnaround\": sum_weighted / n,\n        \"avg_waiting\": sum_wait / n,\n    }\n",
+      "starter_python": "def solve(jobs):\n    # jobs: [{'name':..,'arrival':..,'service':..}, ...]，按给定顺序非抢占地依次执行\n    # 对每个作业：\n    #   start    = max(当前时间 t, arrival)\n    #   finish   = start + service\n    #   turnaround          = finish - arrival\n    #   weighted_turnaround = turnaround / service\n    #   waiting             = turnaround - service\n    #   更新 t = finish\n    # 返回三项平均值：{'avg_turnaround':.., 'avg_weighted_turnaround':.., 'avg_waiting':..}\n    t = 0.0\n    # TODO: 累加三个和，最后除以作业数返回字典\n    pass\n",
+      "judge_problem_id": "sched-metrics",
+      "hints": [
+        "关键：start = max(t, arrival)，处理 CPU 空闲等待的情况。",
+        "等待时间 = turnaround - service，等价于 start - arrival。",
+        "返回值是三个平均值组成的字典，键名必须完全一致。"
+      ]
+    }
+  ]
+}

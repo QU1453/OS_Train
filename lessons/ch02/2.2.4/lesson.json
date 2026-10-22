@@ -1,0 +1,12 @@
+{
+  "id": "2.2.4",
+  "chapter": "ch02",
+  "order": 16,
+  "title": "调度算法",
+  "subtitle": "FCFS · SJF/SPF · HRRN · 优先级 · 时间片轮转 · 多级反馈队列",
+  "tags": ["计算", "高频", "动画", "代码"],
+  "difficulty": "提高",
+  "minutes": 40,
+  "exam": "FCFS、SJF、HRRN、优先级、时间片轮转、多级反馈队列的基本思想与比较；给定作业表求各算法的执行顺序并计算平均周转时间/带权周转时间；抢占式与非抢占式 SJF 的区别；各算法的优缺点与适用场景",
+  "scenes": ["sched-algorithms"]
+}

@@ -1,0 +1,92 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "在哲学家进餐问题中，若每位哲学家都「先拿起左筷、再拿起右筷」，则可能发生死锁。其根本原因是（　）。",
+      "options": [
+        "筷子数量不足",
+        "哲学家之间形成了循环等待",
+        "没有对筷子设置互斥信号量",
+        "哲学家进餐时间过长"
+      ],
+      "answer": 1,
+      "explain": "每根筷子都是临界资源，用初值 1 的信号量即可保证互斥，故 C 不是原因。当 5 人同时各拿起左筷后，都去等邻座手中的右筷，<strong>每个人都占用着一根筷子又等待下一根</strong>，形成<strong>循环等待</strong>，从而死锁。筷子总数恰为 5 根并非死锁的本质（A 错误）。"
+    },
+    {
+      "id": "q2",
+      "stem": "若采用「限制同时取筷的人数」来避免死锁，5 位哲学家中至多允许同时试图取筷的人数为（　）。",
+      "options": ["2", "3", "4", "5"],
+      "answer": 2,
+      "explain": "只要至多 <strong>4</strong> 人同时抢筷子，就至少有一位哲学家无法参与争夺；当其余 4 人各自持有一根、都在等第二根时，剩下的那根筷子必然在未参与的第 5 人手中，此人最终能放下筷子，从而打破循环。若允许 5 人同时取筷，就退化为原来的死锁情形。"
+    },
+    {
+      "id": "q3",
+      "stem": "哲学家进餐问题中，为每根筷子设置的信号量 chopstick[i] 的初值应为（　）。",
+      "options": ["0", "1", "2", "5"],
+      "answer": 1,
+      "explain": "一根筷子在同一时刻只能被一位哲学家持有，属于<strong>互斥资源</strong>，对应的信号量是<strong>二值信号量</strong>，初值为 <strong>1</strong>。初值设为 0 会使任何 <code>P(chopstick[i])</code> 立即阻塞，无法进餐。"
+    },
+    {
+      "id": "q4",
+      "stem": "采用「奇数号哲学家先取右筷、偶数号哲学家先取左筷」的方法，破坏的死锁必要条件是（　）。",
+      "options": ["互斥条件", "请求与保持条件", "不可剥夺条件", "循环等待条件"],
+      "answer": 3,
+      "explain": "该方法的本质是<strong>资源有序分配</strong>：让所有进程按统一的「筷子编号顺序」申请资源（先小号后大号），使资源请求无法首尾相接成环，从而<strong>破坏循环等待</strong>条件。互斥、请求与保持、不可剥夺在此方案中并未改变。"
+    },
+    {
+      "id": "q5",
+      "stem": "采用「仅当左右两根筷子都可用时才允许拿起（或把拿两根筷子的动作做成原子操作）」的方法，主要破坏了死锁的（　）。",
+      "options": ["互斥条件", "请求与保持条件", "循环等待条件", "上述都不是"],
+      "answer": 1,
+      "explain": "「要么一次拿到两根，要么一根都不拿」，意味着进程不会<strong>占用一根资源的同时再去等待另一根</strong>，即<strong>破坏请求与保持条件</strong>（等价于 AND 型信号量 / 一次性申请全部资源）。"
+    },
+    {
+      "id": "q6",
+      "stem": "下列有关哲学家进餐问题解决方案的叙述中，<strong>错误</strong>的是（　）。",
+      "options": [
+        "限制至多 4 人同时取筷可避免死锁",
+        "资源有序分配（按筷子序号取用）可避免死锁",
+        "只要给每根筷子设置初值为 1 的信号量，就不会死锁",
+        "一次成对取得两把筷子可破坏「请求与保持」条件"
+      ],
+      "answer": 2,
+      "explain": "给每根筷子设置初值 1 的信号量<strong>只能保证互斥</strong>，并不能避免「循环等待」造成的死锁——这正是原始错误解法的配置。A、B、D 均是有效的避免死锁措施，说法正确。"
+    },
+    {
+      "id": "q7",
+      "stem": "若用「限制人数」方案，需引入信号量 count 控制同时取筷的人数，则 count 的初值应为（　）。",
+      "options": ["1", "4", "5", "0"],
+      "answer": 1,
+      "explain": "5 位哲学家中至多允许 4 人同时试图取筷，故控制信号量 count 的初值为 <strong>4</strong>：每位哲学家取筷前先 <code>P(count)</code>，取筷并进餐完毕后 <code>V(count)</code>。初值为 5 起不到限制作用，初值为 1 会把进餐完全串行化。"
+    },
+    {
+      "id": "q8",
+      "stem": "关于哲学家进餐问题，下列理解正确的是（　）。",
+      "options": [
+        "它体现了「读读可以共享」的思想，与读者-写者问题本质相同",
+        "它体现了多个进程循环申请多个资源时的死锁问题，是资源分配与死锁预防的经典模型",
+        "它的死锁无法通过任何信号量机制避免",
+        "哲学家在思考时仍持有筷子"
+      ],
+      "answer": 1,
+      "explain": "哲学家进餐问题刻画的是<strong>进程循环申请多个互斥资源</strong>的情形，是研究<strong>死锁成因与预防</strong>的经典模型，B 正确。它不涉及「读读共享」（A 错误）；通过限制人数、有序分配、成对分配等信号量方案<strong>可以避免死锁</strong>（C 错误）；思考时应已<strong>放下</strong>筷子（D 错误）。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "哲学家进餐问题（避免死锁）",
+      "prompt": "<p>用<strong>信号量机制</strong>实现哲学家进餐问题并<strong>避免死锁</strong>。<code>n_philosophers</code> 位哲学家围坐一圈，第 i 位需同时持有左叉 i 与右叉 (i+1) mod n 才能进餐，共 <code>rounds</code> 轮。</p><p>请在 <code>run(S)</code> 中：为每把叉子建立初值 1 的信号量；采用<strong>资源有序分配（奇偶法）</strong>——偶数号先取左叉再取右叉，奇数号先取右叉再取左叉，以破坏循环等待、避免死锁。持有叉子时用 <code>S.enter(f\"fork{i}\")</code> 标注，进餐时用 <code>S.enter(\"eat\")</code> / <code>S.exit(\"eat\")</code> 标注。</p><p>判题会在多轮运行中校验：无异常、同一把叉子任一时刻仅被一位哲学家持有（互斥）、无死锁。可用的 harness API：<code>S.sem(init, name)</code>、<code>S.P(s)</code>、<code>S.V(s)</code>、<code>S.enter(label)</code>/<code>S.exit(label)</code>、<code>S.spawn(fn, *args)</code>、<code>S.sleep(ms)</code>，配置由 <code>S.cfg</code> 提供。</p>",
+      "c_reference": "semaphore chopstick[5] = {1, 1, 1, 1, 1};\n\nphilosopher(i) {\n    while (1) {\n        if (i % 2 == 0) {             // 偶数号：先左后右\n            P(chopstick[i]);\n            P(chopstick[(i+1) % 5]);\n        } else {                      // 奇数号：先右后左，破坏循环等待\n            P(chopstick[(i+1) % 5]);\n            P(chopstick[i]);\n        }\n        eat;                          // 两把叉子到手，进餐\n        V(chopstick[i]);              // 先取的后放，后取的先放\n        V(chopstick[(i+1) % 5]);\n        think;\n    }\n}",
+      "python_reference": "def run(S):\n    n = int(S.cfg[\"n_philosophers\"])\n    rounds = int(S.cfg[\"rounds\"])\n    forks = [S.sem(1, f\"fork{i}\") for i in range(n)]   # 每把叉子一个二值信号量\n\n    def philosopher(i):\n        left = i\n        right = (i + 1) % n\n        if i % 2 == 0:\n            first, second = left, right     # 偶数：先左后右\n        else:\n            first, second = right, left     # 奇数：先右后左，破坏循环等待\n\n        for _ in range(rounds):\n            S.P(forks[first])               # 取第一把叉子\n            S.enter(f\"fork{first}\")         # 标注持有该叉子（no_concurrent 校验互斥）\n            S.P(forks[second])              # 取第二把叉子\n            S.enter(f\"fork{second}\")\n\n            S.enter(\"eat\")                  # 两把叉子到手，进餐\n            S.sleep(2)\n            S.exit(\"eat\")\n\n            S.exit(f\"fork{second}\")         # 先放的叉子后取（后进先出）\n            S.V(forks[second])              # 放下并唤醒等待者\n            S.exit(f\"fork{first}\")\n            S.V(forks[first])\n\n    for i in range(n):\n        S.spawn(philosopher, i)",
+      "starter_python": "def run(S):\n    n = int(S.cfg[\"n_philosophers\"])\n    rounds = int(S.cfg[\"rounds\"])\n\n    # TODO: 1) 为每把叉子建立信号量：forks = [S.sem(1, f\"fork{i}\") for i in range(n)]\n    # TODO: 2) 定义 philosopher(i)：\n    #           偶数号先取左叉 i 再取右叉 (i+1)%n；奇数号先取右叉再取左叉（破坏循环等待）\n    #           取叉用 S.P(forks[j])，并用 S.enter(f\"fork{j}\") 标注持有\n    #           进餐用 S.enter(\"eat\")/S.exit(\"eat\") 标注，进餐前 S.sleep(2)\n    #           放叉用 S.exit(...) 与 S.V(forks[j])，顺序与取叉相反\n    # TODO: 3) 用 S.spawn 启动 n 位哲学家\n    pass",
+      "judge_problem_id": "dining-philosophers",
+      "hints": [
+        "每把叉子一个初值 1 的信号量，保证叉子互斥。",
+        "关键在取叉顺序：奇数号先右后左、偶数号先左后右，破坏循环等待。",
+        "持有叉子时务必 S.enter(f\"fork{j}\") 标注，判题据此校验同一把叉子不被两人同时持有。",
+        "先取的叉子后放，避免已释放的叉子被邻近者取走后自己还在等待。"
+      ]
+    }
+  ]
+}

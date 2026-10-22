@@ -1,0 +1,154 @@
+<h2>2.4.2 死锁预防</h2>
+
+<p>上一节指出，产生死锁必须同时满足互斥、不可剥夺、请求并保持、循环等待四个必要条件。反过来想：只要<strong>破坏其中任意一个条件</strong>，死锁就无从产生。这正是<strong>死锁预防（Deadlock Prevention）</strong>的核心思想——在系统设计阶段就<strong>静态地</strong>设置限制，使四个必要条件至少有一个不成立。</p>
+
+<div class="scene" data-scene="deadlock-prevent"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>死锁预防</strong>：在资源分配之前就施加某种约束，通过<strong>破坏死锁四个必要条件中的一个或多个</strong>，使系统在任何情况下都不会产生死锁。它属于<strong>事先预防</strong>的静态策略。</p>
+</div>
+
+<div class="qfig" data-qfig="pv-def"></div>
+
+<div class="blk key">
+  <div class="blk__label">总体思路</div>
+  <p>四个必要条件对应四条预防途径：<strong>破坏互斥条件、破坏不可剥夺条件、破坏请求并保持条件、破坏循环等待条件</strong>。四者缺一不可，破其一即可防死锁——这是本节最重要的一句话。</p>
+</div>
+
+<div class="qfig" data-qfig="pv-map"></div>
+
+<h3>1. 破坏互斥条件</h3>
+
+<p>互斥条件是指资源在一段时间内只能被一个进程排它地使用。要破坏它，就是让资源可以被<strong>多个进程同时共享</strong>，例如把临界资源改造成可重入、可共享的资源（如把独占设备改造为共享设备，采用 SPOOLing 技术把打印机虚拟成可共享的逻辑设备）。</p>
+
+<div class="qfig" data-qfig="pv-mutex"></div>
+
+<div class="blk warn">
+  <div class="blk__label">为什么通常不采用</div>
+  <p>① 许多资源的<strong>物理特性</strong>决定了它必须互斥使用（如一台打印机、一个临界变量），无法改造；</p>
+  <p>② 为系统安全，许多资源本身<strong>就应当</strong>由多进程互斥访问。因此「破坏互斥条件」往往<strong>不现实、一般不用</strong>，仅在极少数资源上可行。考试中若问「哪种方式一般不采用」，答案多为此。</p>
+</div>
+
+<h3>2. 破坏不可剥夺条件</h3>
+
+<p>不可剥夺条件是指进程已获得的资源在未用毕前不能被强行夺走。破坏方法有两种典型做法：</p>
+
+<ul>
+  <li><strong>做法一（主动释放）</strong>：一个已保持了某些资源的进程，当它<strong>新的资源请求不能立即满足</strong>时，必须<strong>释放它已保持的所有资源</strong>，待以后需要时重新申请。换言之，不允许「吃在碗里看着锅里」。</li>
+  <li><strong>做法二（被动剥夺）</strong>：当进程请求的资源正被其他进程占用时，由操作系统<strong>强行剥夺</strong>占用者手中的该资源，转交给请求进程。</li>
+</ul>
+
+<div class="qfig" data-qfig="pv-nodep-a"></div>
+
+<div class="qfig" data-qfig="pv-nodep-b"></div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>破坏不可剥夺条件的策略<strong>实现复杂、系统开销大</strong>：剥夺资源可能使被剥夺进程前一阶段的工作<strong>失效</strong>，甚至要「重做」，从而降低系统吞吐量、也可能引发新的等待。它只适用于状态<strong>容易被保存和恢复</strong>的资源（如 CPU 寄存器、内存页面），对打印机这类<strong>不可剥夺设备</strong>一般不适用。</p>
+</div>
+
+<div class="qfig" data-qfig="pv-nodep-trap"></div>
+
+<h3>3. 破坏请求并保持条件</h3>
+
+<p>请求并保持条件是指进程「已占有资源、又阻塞等待新资源、且不放已占资源」。破坏它有两条常见途径：</p>
+
+<div class="blk key">
+  <div class="blk__label">两条途径</div>
+  <p><strong>途径一：资源预分配（一次性申请）</strong>——规定进程在<strong>运行之前一次性申请它所需的全部资源</strong>，只要有一个资源不能满足，就不投入运行（不占有任何资源，因而不满足请求并保持）。</p>
+  <p><strong>途径二：逐步释放</strong>——允许进程只获得运行初期所需的资源即可投入运行，运行过程中<strong>逐步释放已用毕的资源</strong>，然后再申请新的资源。这样进程在申请新资源时手中不再保留「暂时不用」的资源。</p>
+</div>
+
+<div class="qfig" data-qfig="pv-hold-a"></div>
+
+<div class="qfig" data-qfig="pv-hold-b"></div>
+
+<div class="blk warn">
+  <div class="blk__label">缺点</div>
+  <p><strong>资源利用率低、可能发生饥饿</strong>：当各进程所需资源都很晚才会用到时，若采用「一次性申请全部资源」，会造成资源被<strong>长期闲置浪费</strong>，系统吞吐量下降；某些进程可能因为始终凑不齐全部资源而<strong>推迟运行（饥饿）</strong>，严重时甚至永远得不到执行。</p>
+</div>
+
+<div class="qfig" data-qfig="pv-hold-cost"></div>
+
+<h3>4. 破坏循环等待条件</h3>
+
+<p>循环等待条件是指形成进程—资源的环路等待链。破坏它的经典方法是<strong>资源有序分配法（顺序资源分配法 / 层次分配法）</strong>。</p>
+
+<div class="blk def">
+  <div class="blk__label">资源有序分配法</div>
+  <p>① 系统把<strong>所有资源按类型进行编号</strong>（如打印机 =1、扫描仪 =2、磁带机 =3……）；</p>
+  <p>② 规定每个进程<strong>只能按编号递增的顺序申请资源</strong>；同类资源（同一编号）则<strong>一次性申请完</strong>。</p>
+</div>
+
+<div class="qfig" data-qfig="pv-order"></div>
+
+<p>这样，任何一个进程在持有较高编号资源后，都不可能再申请较低编号的资源，从而<strong>不可能形成循环等待链</strong>，从根本上避免了环路等待，也就避免了死锁。</p>
+
+<div class="blk memo">
+  <div class="blk__label">直观理解</div>
+  <p>把资源编号看成「从小到大只增不减」的台阶：进程一旦踏上高编号台阶，就永远不能再回到低编号台阶去要资源。于是所有的申请都朝一个方向走，<strong>形不成环</strong>。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">缺点</div>
+  <p>① <strong>限制新设备的增加</strong>（新设备必须重新编号，且要与已分配顺序协调）；</p>
+  <p>② 可能造成<strong>资源浪费</strong>：若某进程先用低编号资源、后用高编号资源，但实际只需低编号资源，仍被迫按顺序申请，可能被迫持有暂时不用的资源；</p>
+  <p>③ <strong>编程不便</strong>：要求程序员严格遵守申请顺序，给程序设计和实现带来麻烦。</p>
+</div>
+
+<h3>5. 四种破坏方式对比</h3>
+
+<table class="tbl">
+  <thead>
+    <tr><th>破坏条件</th><th>主要方法</th><th>可行性 / 代价</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>互斥条件</strong></td>
+      <td>改造资源使其可共享（如 SPOOLing 虚拟设备）</td>
+      <td>受资源物理特性限制，<strong>一般不采用</strong></td>
+    </tr>
+    <tr>
+      <td><strong>不可剥夺条件</strong></td>
+      <td>请求不满足时释放已占资源，或强行剥夺</td>
+      <td>实现复杂、开销大，仅适用状态可保存恢复的资源</td>
+    </tr>
+    <tr>
+      <td><strong>请求并保持条件</strong></td>
+      <td>资源预分配（一次性申请）或逐步释放</td>
+      <td>简单，但<strong>资源利用率低、可能饥饿</strong></td>
+    </tr>
+    <tr>
+      <td><strong>循环等待条件</strong></td>
+      <td>资源有序分配法（按编号递增申请）</td>
+      <td>较实用，但限制新设备、编程不便</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">死锁预防的总体评价</div>
+  <p>优点：<strong>策略简单、可靠，能从源头防止死锁</strong>。</p>
+  <p>缺点：施加的限制往往<strong>过严</strong>，导致<strong>资源利用率低、系统吞吐量下降</strong>，甚至引起饥饿。因此实际系统常不采用死锁预防，而转向更灵活的<strong>死锁避免（银行家算法）</strong>或<strong>死锁检测与解除</strong>。</p>
+</div>
+
+<div class="qfig" data-qfig="pv-verdict"></div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「死锁预防的基本思想」→ 答<strong>破坏四个必要条件之一</strong>。</p>
+  <p>② 问「资源有序分配法破坏的是哪个条件」→ 答<strong>循环等待条件</strong>（不是请求并保持！这是最常见的混淆点）。</p>
+  <p>③ 问「一次性申请全部资源破坏的是哪个条件」→ 答<strong>请求并保持条件</strong>。</p>
+  <p>④ 问「哪种死锁预防方法一般不采用」→ 答<strong>破坏互斥条件</strong>。</p>
+</div>
+
+<div class="qfig" data-qfig="pv-exam"></div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>死锁预防是设法至少破坏产生死锁的四个必要条件之一（甚至几个），以防止死锁的发生。破坏互斥条件通常是不现实的，因此主要从破坏后三个条件入手。</p>
+</div>
+
+<p>死锁预防过于保守，下一节将学习一种允许较灵活分配的动态策略——<strong>2.4.3 死锁避免与银行家算法</strong>。</p>

@@ -1,0 +1,16 @@
+{
+  "id": "1.4",
+  "chapter": "ch01",
+  "order": 4,
+  "title": "操作系统的结构",
+  "subtitle": "分层 · 模块化 · 宏内核 · 微内核 · 外核",
+  "tags": [
+    "概念"
+  ],
+  "difficulty": "基础",
+  "minutes": 30,
+  "exam": "微内核的优点（803 高频）与各结构优缺点辨析",
+  "scenes": [
+    "os-structure"
+  ]
+}

@@ -1,0 +1,226 @@
+<h2>2.3.2 实现临界区互斥的基本方法</h2>
+
+<p>上一节给出了解决临界区互斥问题的<strong>四条准则</strong>（空闲让进、忙则等待、有限等待、让权等待）。这一节介绍实现互斥的具体方法，可分为<strong>软件实现方法</strong>与<strong>硬件实现方法</strong>两大类。软件方法由程序员用代码在<strong>进入区</strong>检查、在<strong>退出区</strong>恢复标志来实现；硬件方法则借助一条<strong>不可中断的指令</strong>来保证「检查与上锁」的原子性。</p>
+
+<p>所有方法都围绕同一对矛盾展开：进入区里需要完成「<strong>检查对方是否在临界区</strong>」和「<strong>置自己的标志（上锁）</strong>」两个动作，而这两个动作如果能被进程切换打断，就可能被破坏，从而丧失互斥。下面逐一分析各种方法<strong>在哪一步被打断</strong>、<strong>违背了哪条准则</strong>。</p>
+
+<h2>1. 软件实现方法</h2>
+
+<h3>1.1 单标志法</h3>
+
+<p>设置一个公有的整型变量 <code>turn</code>，用来表示当前<strong>允许哪个进程进入</strong>临界区。</p>
+
+<pre class="formula">// 单标志法：turn = 0 表示轮到 P0
+// P0 进程
+while (turn != 0);     // 进入区
+critical section;       // 临界区
+turn = 1;               // 退出区：把使用权让给 P1
+remainder section;
+
+// P1 进程
+while (turn != 1);     // 进入区
+critical section;       // 临界区
+turn = 0;               // 退出区
+remainder section;</pre>
+
+<p>同一时刻 <code>turn</code> 只能取一个值，因此两进程<strong>不可能同时进入</strong>临界区，互斥成立。但它的致命缺点是：两进程必须<strong>交替</strong>进入——若 P0 用完临界区后<code>turn</code>被置为 1，而此刻 P1 并不想进入临界区，则 P0 想再次进入时会被<code>while (turn != 0)</code>挡住，无法进入。</p>
+
+<div class="blk warn">
+  <div class="blk__label">易错点：单标志法违背「空闲让进」</div>
+  <p>单标志法虽保证互斥（满足忙则等待），但违背了<strong>空闲让进</strong>：临界区明明空闲（没有进程在用），但只要「使用权」不在自己手上，进程就无法进入。<code>while(turn!=x)</code> 还是<strong>忙等待</strong>，因此也不满足<strong>让权等待</strong>。</p>
+</div>
+
+<h3>1.2 双标志先检查法</h3>
+
+<p>设置布尔数组 <code>flag[2]</code>，<code>flag[i] = true</code> 表示进程 i <strong>想要进入</strong>临界区。算法思想是「<strong>先检查</strong>对方标志是否空闲，确认空闲后再置自己的标志（上锁）」。</p>
+
+<pre class="formula">// 双标志先检查法
+// P0 进程
+while (flag[1]);       // ① 先检查对方是否想进
+flag[0] = true;         // ② 再上锁：表示自己要进
+critical section;
+flag[0] = false;        // 解锁
+remainder section;
+
+// P1 进程
+while (flag[0]);       // ① 先检查
+flag[1] = true;         // ② 再上锁
+critical section;
+flag[1] = false;
+remainder section;</pre>
+
+<p>问题出在「检查」和「上锁」<strong>不是一气呵成</strong>的：P0 执行完①发现 <code>flag[1]</code> 为假，尚未执行②时发生进程切换；P1 执行完①发现 <code>flag[0]</code> 为假，也执行②。之后两进程都置了标志并各自进入临界区——<strong>互斥被破坏</strong>。</p>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：双标志先检查法违背「忙则等待」</div>
+  <p>由于「检查对方」与「上锁」之间可被切换，「双方都检测到对方为空闲」时就会<strong>同时闯入</strong>临界区，违背<strong>忙则等待</strong>。它满足空闲让进（对方没占用就能进）。
+  这也说明：凡是要「先判断、后修改」的标志位，只要判断与修改不能原子完成，就会失效。</p>
+</div>
+
+<h3>1.3 双标志后检查法</h3>
+
+<p>为修补上一种方法的漏洞，把顺序倒过来：「<strong>先上锁</strong>，再检查对方」。</p>
+
+<pre class="formula">// 双标志后检查法
+// P0 进程
+flag[0] = true;         // ① 先上锁
+while (flag[1]);       // ② 后检查对方
+critical section;
+flag[0] = false;
+remainder section;
+
+// P1 进程
+flag[1] = true;         // ① 先上锁
+while (flag[0]);       // ② 后检查
+critical section;
+flag[1] = false;
+remainder section;</pre>
+
+<p>此时「同时闯入」不会发生了（一旦某方已置标志，另一方检查时会被挡住），互斥得到保证。但出现了新的问题：若 P0 与 P1 <strong>几乎同时</strong>执行①，两个标志都变为 <code>true</code>，随后双方在②处都发现对方想进，于是<strong>都进不去</strong>，互相等待、永远僵持。</p>
+
+<div class="blk warn">
+  <div class="blk__label">易错点：双标志后检查法违背「空闲让进」与「有限等待」</div>
+  <p>两进程「谦让」过头，谁都不肯先进，导致<strong>谁也无法进入</strong>——临界区实际空闲却无人能进，违背<strong>空闲让进</strong>；同时双方可能<strong>无限期等待</strong>，违背<strong>有限等待</strong>，会造成饥饿。它仍是忙等。</p>
+</div>
+
+<h3>1.4 Peterson 算法</h3>
+
+<p>Peterson 算法把「标志法」与「单标志法」的思想结合起来：用 <code>flag[]</code> 表示<strong>谁想进</strong>，用 <code>turn</code> 表示<strong>该让谁先进</strong>，并让进程主动「礼让」。</p>
+
+<pre class="formula">// Peterson 算法
+// P0 进程
+flag[0] = true;                          // 我想进入
+turn = 1;                                // 但先礼让对方 P1
+while (flag[1] && turn == 1);            // 若 P1 想进且轮到他，我就等
+critical section;
+flag[0] = false;                         // 我不想进了
+remainder section;
+
+// P1 进程
+flag[1] = true;
+turn = 0;                                // 礼让 P0
+while (flag[0] && turn == 0);
+critical section;
+flag[1] = false;
+remainder section;</pre>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：Peterson 算法满足前三条准则</div>
+  <p>① <strong>互斥</strong>：若 P0、P1 同时进入，则需 <code>flag[0]=flag[1]=true</code>，且 <code>turn</code> 同时等于 1 又等于 0，矛盾——互斥成立。<br>
+  ② <strong>空闲让进</strong>：若对方不想进入（<code>flag[对方]=false</code>），则循环条件为假，本进程立即进入。<br>
+  ③ <strong>有限等待</strong>：本进程先置 <code>turn=对方</code>，即便被挡，对方进入后退出时会把 <code>flag</code> 置 false，并把 <code>turn</code> 改回，本进程不会无限等待。<br>
+  ④ <strong>不满足让权等待</strong>：<code>while</code> 循环仍是忙等，进程占用处理机空转。</p>
+</div>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀：软件方法「单双先双后，最后 Peterson」</div>
+  <p><strong>单标志</strong>——靠 turn 轮流，违<strong>空闲让进</strong>；<br>
+  <strong>双标志先检查</strong>——先查后锁，违<strong>忙则等待</strong>；<br>
+  <strong>双标志后检查</strong>——先锁后查，违<strong>空闲让进 + 有限等待</strong>；<br>
+  <strong>Peterson</strong>——flag + turn，前三条全满足，唯缺<strong>让权等待</strong>。</p>
+</div>
+
+<h2>2. 硬件实现方法</h2>
+
+<p>硬件方法的共同思路：把「检查 + 上锁」做成一条<strong>不可被中断的原语指令</strong>，从根本上杜绝「检查与修改被打断」的漏洞。</p>
+
+<h3>2.1 中断屏蔽方法</h3>
+
+<p>在进入临界区前<strong>关中断</strong>，退出时<strong>开中断</strong>。关中断期间不再响应中断，因此不会发生进程切换，也就不会被别的进程打断。</p>
+
+<pre class="formula">关中断;
+critical section;    // 临界区
+开中断;</pre>
+
+<div class="blk warn">
+  <div class="blk__label">易错点：中断屏蔽的三大局限</div>
+  <p>① <strong>限制 CPU 并发能力</strong>：关中断期间系统无法响应外部中断，降低效率；<br>
+  ② <strong>不适用于多处理机</strong>：关掉一个 CPU 的中断并不影响另一个 CPU 上的进程，其它 CPU 仍可并发执行；<br>
+  ③ <strong>只适用于内核进程</strong>：开/关中断指令是<strong>特权指令</strong>，只能由操作系统内核执行，用户进程无权使用。</p>
+</div>
+
+<h3>2.2 TestAndSet 指令（TS / TSL）</h3>
+
+<p>TS 指令用硬件逻辑<strong>原子地</strong>完成「读出旧值并把该标志置为 true」：</p>
+
+<pre class="formula">// 硬件提供的原子指令
+bool TestAndSet(bool *lock) {
+    bool old = *lock;   // 读出旧值
+    *lock = true;       // 无条件置为 true（上锁）
+    return old;         // 返回旧值
+}
+
+// 使用
+while (TestAndSet(&lock));   // 进入区：若返回 true 说明别人已上锁，继续等
+critical section;            // 临界区
+lock = false;                // 退出区：解锁
+remainder section;</pre>
+
+<p>由于「读旧值 + 置 true」由一条指令原子完成，不会被打断，因此互斥成立，且<strong>适用于多处理机</strong>。但 <code>while</code> 仍是忙等，<strong>不满足让权等待</strong>。</p>
+
+<h3>2.3 Swap 指令（Exchange / 对换指令）</h3>
+
+<p>Swap 指令原子地<strong>交换两个变量的值</strong>：</p>
+
+<pre class="formula">// 硬件提供的原子指令
+void Swap(bool *a, bool *b) {
+    bool tmp = *a; *a = *b; *b = tmp;
+}
+
+// 使用
+bool key;
+do {
+    key = true;             // 自己先「锁上」
+    Swap(&lock, &key);      // 原子交换：把 key 换进来
+} while (key);              // key 仍为 true，说明原本 lock 已上锁，继续等
+critical section;
+lock = false;               // 解锁
+remainder section;</pre>
+
+<p>同样由硬件保证原子性，适合多处理机，<strong>不满足让权等待</strong>（忙等）。</p>
+
+<h2>3. 各方法对四条准则的满足情况</h2>
+
+<p>这是历年选择题最爱考的一张对照表，务必记牢：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>方法</th><th>空闲让进</th><th>忙则等待</th><th>有限等待</th><th>让权等待</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>单标志法</td><td>✗</td><td>✓</td><td>✓</td><td>✗</td></tr>
+    <tr><td>双标志先检查法</td><td>✓</td><td>✗</td><td>✓</td><td>✗</td></tr>
+    <tr><td>双标志后检查法</td><td>✗</td><td>✓</td><td>✗</td><td>✗</td></tr>
+    <tr><td>Peterson 算法</td><td>✓</td><td>✓</td><td>✓</td><td>✗</td></tr>
+    <tr><td>中断屏蔽方法</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>TestAndSet 指令</td><td>✓</td><td>✓</td><td>✓</td><td>✗</td></tr>
+    <tr><td>Swap 指令</td><td>✓</td><td>✓</td><td>✓</td><td>✗</td></tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>① 软件方法<strong>全部不满足让权等待</strong>，且前三种各违背至少一条准则；只有 <strong>Peterson 算法</strong>满足前三条。<br>
+  ② 硬件方法 TestAndSet 与 Swap 利用指令原子性保证互斥，满足前三条，但<strong>仍是忙等</strong>，不满足让权等待。<br>
+  ③ <strong>中断屏蔽方法是这些方法中唯一不需要忙等</strong>的（因为直接禁止了切换），但它有前述三大局限。</p>
+</div>
+
+<div class="scene" data-scene="mutex-impl"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>4. 本节小结与真题问法</h2>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 给出某算法伪代码，问「违背了哪条准则」→ 对照上表：单标志法违<strong>空闲让进</strong>；双标志先检查法违<strong>忙则等待</strong>；双标志后检查法违<strong>空闲让进、有限等待</strong>。<br>
+  ② 问「能同时满足空闲让进、忙则等待、有限等待的软件方法」→ <strong>Peterson 算法</strong>。<br>
+  ③ 问「硬件互斥方法的优缺点」→ 优点：适合多处理机、实现简单；缺点：都是<strong>忙等</strong>，不满足让权等待。<br>
+  ④ 问「关中断方法为何不能用于多处理机」→ 关中断只影响<strong>本 CPU</strong>，其它 CPU 上的进程仍可并发访问临界资源。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>实现临界区互斥，软件方法有单标志法、双标志先检查法、双标志后检查法和 Peterson 算法；硬件方法有中断屏蔽方法、TestAndSet 指令和 Swap 指令。其中只有 Peterson 算法能同时满足空闲让进、忙则等待和有限等待三条准则，但仍有忙等待。</p>
+</div>
+
+<p>上述方法多多少少存在忙等或实现复杂的缺陷。下面一节将引入一种功能更强、使用更方便的机制——<strong>信号量机制（PV 操作）</strong>，它能同时解决互斥与同步问题，并满足让权等待。</p>

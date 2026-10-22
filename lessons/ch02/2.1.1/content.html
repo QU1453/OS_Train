@@ -1,0 +1,157 @@
+<h2>1. 为什么要引入进程：程序并发执行</h2>
+
+<p>在单道批处理系统中，内存里只容纳一道程序，CPU 与外部设备<strong>串行</strong>工作，资源利用率很低。引入<strong>多道程序技术</strong>后，内存中可同时装入多道程序，让它们<strong>并发</strong>推进：当一道程序因等待 I/O 而暂停时，CPU 立即转去执行另一道程序，从而提高系统吞吐量。</p>
+
+<p>但随之而来的问题是：这些并发执行的程序<strong>如何被操作系统描述、管理和调度</strong>？静态的「程序」只是一组<strong>有序指令和数据的集合</strong>，它既不能表达「哪道程序已调入内存、运行到哪一条指令」，也不能表达「它占用了哪些资源、当前处于何种状态」。因此操作系统必须引入一个新的概念来刻画程序的<strong>动态执行过程</strong>——这就是<strong>进程（Process）</strong>。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>进程</strong>是进程实体的运行过程，是系统进行<strong>资源分配和调度</strong>的一个独立单位。也可以表述为：进程是程序在一个数据集合上<strong>运行的过程</strong>，是系统进行资源分配和调度的<strong>基本单位</strong>。</p>
+</div>
+
+<p>理解这个定义要抓住两点：其一，进程是<strong>动态</strong>的，是程序的一次执行过程，有「生命期」（创建、就绪、运行、阻塞、终止）；其二，进程是操作系统<strong>分配资源</strong>的基本单位，同时也是早期系统中<strong>独立调度</strong>的单位（引入线程后，调度单位变为线程，这一点在第 2.1.5 节详述）。</p>
+
+<h2>2. 进程与程序的区别和联系</h2>
+
+<p>进程与程序「一字之差」，却是历年选择题的高频考点。核心区别可以概括为「<strong>静与动、永久与暂时</strong>」。</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>对比项</th><th>程序（Program）</th><th>进程（Process）</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>本质</td>
+      <td>静态的，是一组<strong>指令和数据的集合</strong>，是永久存在的</td>
+      <td>动态的，是程序的一次<strong>执行过程</strong>，是暂时存在的</td>
+    </tr>
+    <tr>
+      <td>存在时间</td>
+      <td>可以长期保存，与机器无关</td>
+      <td>有创建、活着、消亡的生命周期</td>
+    </tr>
+    <tr>
+      <td>能否并发</td>
+      <td>程序本身不能并发执行</td>
+      <td>多个进程可以<strong>并发</strong>执行</td>
+    </tr>
+    <tr>
+      <td>组成</td>
+      <td>只包含代码和数据</td>
+      <td>由 <strong>PCB、程序段、数据段</strong> 三部分组成</td>
+    </tr>
+    <tr>
+      <td>对应关系</td>
+      <td>一个程序可以对应<strong>多个</strong>进程</td>
+      <td>一个进程也可运行<strong>多个</strong>程序（尤其配合线程后更常见）</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>① 程序是<strong>静态</strong>的，进程是<strong>动态</strong>的；② 程序可<strong>永久</strong>存在，进程只是<strong>暂时</strong>存在；③ 一个程序可以创建多个进程（例如多次双击运行同一个可执行文件），一个进程也可以执行多个程序（通过调用其它程序）；④ 进程 = 程序 + 数据 + <strong>PCB</strong>，而 PCB 是进程区别于程序的<strong>关键</strong>。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>「进程是一个程序及其数据在机器上运行的<strong>过程</strong>」——强调的是<strong>过程</strong>，不是「程序实体」。另外，进程与程序的对应关系是<strong>多对多</strong>，不能说「进程就是程序」或「一个程序只能有一个进程」。</p>
+</div>
+
+<h2>3. 进程的组成</h2>
+
+<p>一个进程实体（又称进程映像）由三部分构成：<strong>PCB（进程控制块）、程序段、数据段</strong>。其中 <strong>PCB 是进程存在的唯一标志</strong>，操作系统正是通过 PCB 来感知进程的存在。</p>
+
+<h3>3.1 程序段与数据段</h3>
+
+<ul>
+  <li><strong>程序段</strong>：就是能被 CPU 执行的程序代码，它描述了进程要做的事；</li>
+  <li><strong>数据段</strong>：指程序运行时所需的数据（如全局变量、常量、工作区等），它描述了进程操作的对象。</li>
+</ul>
+
+<p>从「静态」角度看，程序段和数据段也被合称为「程序」；但只有加上描述运行状态的 PCB，程序才真正成为一个可被操作系统管理的进程。</p>
+
+<h3>3.2 进程控制块 PCB（重点）</h3>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>进程控制块（Process Control Block, PCB）</strong>是操作系统为每个进程建立的数据结构，用于保存进程的<strong>描述信息、控制信息、资源清单以及处理机现场信息</strong>。操作系统通过 PCB 来管理和控制进程，<strong>PCB 是进程存在的唯一标志</strong>。</p>
+</div>
+
+<table class="tbl">
+  <thead>
+    <tr><th>类别</th><th>主要内容</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>进程描述信息</strong></td><td>进程标识符 PID、用户标识符 UID（谁拥有的进程）</td></tr>
+    <tr><td><strong>进程控制和管理信息</strong></td><td>进程当前状态、进程优先级、代码运行入口、程序在外存中的地址、计时信息（已运行时间——CPU 时间片）</td></tr>
+    <tr><td><strong>资源分配清单</strong></td><td>程序段指针、数据段指针、打开的文件列表、占用的 I/O 设备等</td></tr>
+    <tr><td><strong>处理机相关信息</strong></td><td>各通用寄存器的值、程序计数器 PC、程序状态字 PSW 等（即<strong>处理机现场</strong>，用于进程切换后恢复运行）</td></tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：PCB 有什么用</div>
+  <p>① <strong>PCB 是进程存在的唯一标志</strong>——创建进程就是创建 PCB，撤销进程就是回收 PCB；② 操作系统将各进程的 PCB 组织成<strong>PCB 表</strong>（分就绪队列、阻塞队列等），通过链表或索引方式来调度进程；③ 进程切换时，必须<strong>保存当前进程的现场到其 PCB</strong>，再从新进程的 PCB 中<strong>恢复现场</strong>，这就是「上下文切换」。</p>
+</div>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p>进程组成记「<strong>三件套</strong>」：<strong>程序段、数据段、PCB</strong>。再补一句「<strong>PCB 是唯一标志</strong>」——凡问「进程存在的唯一标志是什么」，答 PCB。</p>
+</div>
+
+<h3>3.3 进程的组织方式</h3>
+
+<p>系统中同时存在许多进程，操作系统如何高效地找到「处于就绪状态、可以投入运行」的进程？答案是依靠对 <strong>PCB 的组织</strong>。操作系统把各个进程的 PCB 按状态组织起来，常用的方式有两种：</p>
+
+<ul>
+  <li><strong>链接方式</strong>：把处于<strong>同一状态</strong>的 PCB 用链接字链接成队列，例如就绪队列、若干个阻塞队列（按阻塞原因区分）。操作系统在内存中保存各队列的<strong>队首指针</strong>，调度时只需从就绪队列取队首进程。</li>
+  <li><strong>索引方式</strong>：根据进程状态建立若干张<strong>索引表</strong>（如就绪索引表、阻塞索引表），表中登记的是相应状态 PCB 的地址，操作系统维护各索引表在内存中的<strong>首地址</strong>。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>PCB 是<strong>常驻内存</strong>的，操作系统通过<strong>PCB 表（就绪队列、阻塞队列、索引表等）</strong>来组织和管理所有进程。进程切换时，调度程序从<strong>就绪队列</strong>中选出一个进程投入运行，将其从就绪队列摘下，并把被剥夺 CPU 的进程按其新状态插入相应队列。可见，「进程队列」实际上是「<strong>PCB 队列</strong>」。</p>
+</div>
+
+<p>需要强调的是，同一进程只有<strong>一个 PCB</strong>，因此一个 PCB 在同一时刻只能位于一个队列之中。进程控制块是操作系统对进程进行管理的<strong>唯一依据</strong>：创建进程时分配 PCB，撤销进程时回收 PCB；进程因等待某事件而暂停时，其 PCB 从就绪队列转入相应的阻塞队列，事件发生后又被重新插入就绪队列。理解了这一点，就不难理解下一节「进程的状态与转换」。</p>
+
+<h2>4. 进程的特征</h2>
+
+<p>与静态的程序相比，进程具有以下特征，其中<strong>动态性</strong>是最基本的特征：</p>
+
+<ul>
+  <li><strong>动态性</strong>：进程是程序的一次执行过程，有「创建——就绪——运行——阻塞——终止」的生命期。<strong>动态性是进程最基本的特征</strong>。</li>
+  <li><strong>并发性</strong>：多个进程实体可同时存在于内存中，并在宏观上并发执行。并发性是进程的重要特征，也是 OS 引入进程的目的之一。</li>
+  <li><strong>独立性</strong>：进程是一个能<strong>独立运行、独立获得资源、独立被调度</strong>的基本单位，是资源分配的基本单位。</li>
+  <li><strong>异步性</strong>：各进程按各自独立的、<strong>不可预知</strong>的速度向前推进，走走停停，何时执行、何时暂停不确定。</li>
+  <li><strong>结构性</strong>：进程实体由 PCB、程序段、数据段三部分组成，具有一定结构。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>五个特征中，<strong>动态性</strong>是<strong>最基本</strong>的（因为进程本质上是「过程」）；<strong>并发性</strong>是引入进程的直接目的；<strong>异步性</strong>是「进程以不可预知的速度推进」，是产生<strong>同步互斥</strong>问题的根源。</p>
+</div>
+
+<div class="scene" data-scene="proc-concept"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>5. 本节小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>概念</strong>：进程是程序的一次执行过程，是资源分配和调度的基本单位。<br><strong>区别</strong>：程序静、进程动；程序永久、进程暂时。<br><strong>组成</strong>：程序段 + 数据段 + PCB（PCB 是唯一标志）。<br><strong>特征</strong>：动态、并发、独立、异步、结构——「<strong>动并独异构</strong>」，动态性最基本。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「进程存在的唯一标志」→ 答 <strong>PCB</strong>（进程控制块）。<br>② 问「进程最基本的特征」→ 答 <strong>动态性</strong>。<br>③ 给若干说法判断对错，常见错误项：把进程说成「静态的」、把程序说成「动态的」、认为「一个程序只能对应一个进程」、把「程序段」等同于「整个进程实体」。</p>
+  <p>④ 问「进程与程序的本质区别」→ 进程是动态的、暂时的执行过程，程序是静态的、永久的指令集合。<br>⑤ 问「操作系统依靠什么感知进程的存在」→ 依靠 <strong>PCB</strong>；进程切换时需要保存/恢复处理机现场（存于 PCB）。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>进程是进程实体的运行过程，是系统进行资源分配和调度的一个独立单位。进程实体由程序段、数据段和 PCB 三部分组成，其中 PCB 是进程存在的唯一标志。进程具有动态性、并发性、独立性和异步性等特征，动态性是进程最基本的特征。</p>
+</div>
+
+<p>完成下方选择题后，进入下一节 <strong>2.1.2 进程的状态与转换</strong>。</p>

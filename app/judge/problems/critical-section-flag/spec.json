@@ -1,0 +1,53 @@
+{
+  "id": "critical-section-flag",
+  "title": "临界区互斥：标志法操作序列模拟",
+  "kind": "deterministic",
+  "entry": "solve",
+  "arg_names": ["ops"],
+  "compare": "exact",
+  "tol": 1e-6,
+  "cases": [
+    {
+      "name": "用例1：严格互斥（先检查后进入，max=1）",
+      "input": {
+        "ops": ["0:set", "0:enter", "0:exit", "0:clear", "1:set", "1:enter", "1:exit", "1:clear"]
+      },
+      "expected": 1
+    },
+    {
+      "name": "用例2：双标志先检查法失效（两进程同时进入，max=2）",
+      "input": {
+        "ops": ["0:set", "1:set", "0:enter", "1:enter", "0:exit", "1:exit", "0:clear", "1:clear"]
+      },
+      "expected": 2
+    },
+    {
+      "name": "用例3：交替进入，仍保持互斥（max=1）",
+      "input": {
+        "ops": ["0:set", "0:enter", "1:set", "0:exit", "1:enter", "1:exit", "0:clear", "1:clear"]
+      },
+      "expected": 1
+    },
+    {
+      "name": "用例4：两进程先后置位后并发进入（max=2）",
+      "input": {
+        "ops": ["0:set", "1:set", "1:enter", "0:enter", "1:exit", "0:exit", "1:clear", "0:clear"]
+      },
+      "expected": 2
+    },
+    {
+      "name": "用例5：单进程多次进出（max=1）",
+      "input": {
+        "ops": ["0:set", "0:enter", "0:exit", "0:enter", "0:exit", "0:enter", "0:exit", "0:clear"]
+      },
+      "expected": 1
+    },
+    {
+      "name": "用例6：两度并发进入（max=2）",
+      "input": {
+        "ops": ["0:set", "1:set", "0:enter", "1:enter", "0:exit", "1:exit", "0:enter", "1:enter", "0:exit", "1:exit", "0:clear", "1:clear"]
+      },
+      "expected": 2
+    }
+  ]
+}

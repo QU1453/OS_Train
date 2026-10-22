@@ -1,0 +1,114 @@
+<h2>1. 问题背景与模型</h2>
+
+<p>生产者-消费者问题是进程同步与互斥最经典的模型。系统中有一组<strong>生产者进程</strong>不断生产数据（产品），并把它放入一个<strong>大小为 n 的有界缓冲区</strong>；另一组<strong>消费者进程</strong>不断从缓冲区取出数据并消费。缓冲区被两类进程共享，因而既是<strong>临界资源</strong>，又是<strong>同步的媒介</strong>。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>生产者-消费者问题</strong>：若干生产者进程与若干消费者进程通过一个<strong>容量有限</strong>的共享缓冲区交换数据。生产者只有<strong>在缓冲区不满</strong>时才能放入产品，消费者只有<strong>在缓冲区不空</strong>时才能取出产品，任何时刻<strong>只能有一个进程操作缓冲区</strong>。本题把「同步」与「互斥」两类并发约束浓缩在一个模型中，是 408 大题最常考的模板。</p>
+</div>
+
+<p>把一个具体的并发场景抽象成本题，是解题的第一步：只要是「一方往共享空间里放、另一方从共享空间里取，且空间有限」的结构，本质上都是生产者-消费者问题。</p>
+
+<div class="scene" data-scene="producer-consumer"></div>
+
+<h2>2. 两类关系分析（解题的起点）</h2>
+
+<p>解任何同步互斥题，都要先数清一共有<strong>几个进程</strong>、它们之间有几对<strong>关系</strong>。本题有生产者、消费者两类进程，关系如下：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>关系</th><th>涉及的进程</th><th>约束含义</th><th>用什么信号量刻画</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>互斥</strong></td>
+      <td>生产者 ↔ 生产者、生产者 ↔ 消费者、消费者 ↔ 消费者</td>
+      <td>任一时刻只能有一个进程读写缓冲区（缓冲区是临界资源）</td>
+      <td>一个初值为 1 的互斥信号量 <strong>mutex</strong></td>
+    </tr>
+    <tr>
+      <td><strong>同步①</strong></td>
+      <td>生产者 → 消费者</td>
+      <td>缓冲区不满，生产者才能放；放了产品后消费者才能取</td>
+      <td>「空闲槽位」信号量 <strong>empty</strong>（初值 = n）</td>
+    </tr>
+    <tr>
+      <td><strong>同步②</strong></td>
+      <td>消费者 → 生产者</td>
+      <td>缓冲区不空，消费者才能取；取走产品后生产者才能再放</td>
+      <td>「已存产品」信号量 <strong>full</strong>（初值 = 0）</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>本题一共 <strong>3 个信号量</strong>：<strong>mutex</strong>（互斥，初值 1）、<strong>empty</strong>（同步，初值 n，代表空闲缓冲区数目）、<strong>full</strong>（同步，初值 0，代表产品数目）。其中 <strong>empty + full = n</strong> 恒成立——每放入一个产品，empty 减 1、full 加 1；每取出一个产品，full 减 1、empty 加 1。</p>
+</div>
+
+<h2>3. 算法描述</h2>
+
+<p>生产者与消费者的处理流程如下。注意体会「<strong>先申请资源、再进临界区</strong>」的 P 操作顺序。</p>
+
+<pre class="formula">semaphore mutex = 1;      // 缓冲区互斥
+semaphore empty = n;      // 空闲缓冲区数，初值 n
+semaphore full  = 0;      // 产品数，初值 0
+
+producer() {
+    while (1) {
+        produce an item;
+        P(empty);          // ① 申请一个空槽（无空槽则阻塞等待）
+        P(mutex);          // ② 申请进入缓冲区（临界区）
+        put item into buffer;
+        V(mutex);          // ③ 退出临界区
+        V(full);           // ④ 通知消费者：产品数 +1
+    }
+}
+
+consumer() {
+    while (1) {
+        P(full);           // ① 申请一个产品（无产品则阻塞等待）
+        P(mutex);          // ② 申请进入缓冲区
+        take item from buffer;
+        V(mutex);          // ③ 退出临界区
+        V(empty);          // ④ 通知生产者：空槽 +1
+        consume the item;
+    }
+}</pre>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：PV 顺序口诀</div>
+  <p>生产者：<strong>P(empty) → P(mutex) → 放 → V(mutex) → V(full)</strong>；<br>消费者：<strong>P(full) → P(mutex) → 取 → V(mutex) → V(empty)</strong>。<br>记忆要点：<strong>「先同步、后互斥」申请（P），「先互斥、后同步」释放（V）</strong>。两个资源类信号量（empty、full）与互斥信号量（mutex）成对出现，V 操作恰好把 P 的顺序倒过来。</p>
+</div>
+
+<h2>4. 为什么 P 操作不能颠倒（本节核心难点）</h2>
+
+<p>如果把生产者写成「先 <code>P(mutex)</code> 再 <code>P(empty)</code>」，在某些情况下会发生<strong>死锁</strong>：假设缓冲区已满（empty = 0），某生产者<strong>先拿到了 mutex</strong>，再去 <code>P(empty)</code>，因 empty = 0 而被<strong>阻塞</strong>；此时消费者想取产品，却因 <strong>mutex 被生产者占着</strong>而无法进入临界区把产品取走、也就无法执行 <code>V(empty)</code>。于是生产者永远等 empty，消费者永远等 mutex，<strong>互相等待，形成死锁</strong>。</p>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>① <strong>P 操作顺序必须「先资源、后互斥」</strong>：一定先 <code>P(empty)/P(full)</code>，再 <code>P(mutex)</code>；若颠倒会让持有 mutex 的进程又去等资源，造成死锁。<br>② <code>V</code> 操作的顺序<strong>可以交换，不会死锁</strong>，但习惯上写「先 <code>V(mutex)</code>、后 <code>V(full)/V(empty)</code>」，让别的进程尽早进入临界区，提高并发度。<br>③ <strong>mutex 不能省</strong>：empty/full 只保证「有空槽 / 有产品」，却<strong>不保证对缓冲区的读写互斥</strong>，读写缓冲区的动作仍需 mutex 保护。<br>④ 互斥信号量的 P、V 必须<strong>成对出现在同一进程内</strong>，且不要把 <code>produce</code> / <code>consume</code> 放进临界区。</p>
+</div>
+
+<h2>5. 进阶：缓冲区大小为 1 时能省 mutex 吗</h2>
+
+<p>可以。当缓冲区容量 <strong>n = 1</strong> 时，<code>empty</code> 与 <code>full</code> 中任意时刻<strong>至多只有一个的值大于 0</strong>（要么有余 1 个空槽、要么有 1 个产品），生产者能放入意味着缓冲区为空，消费者能取出意味着缓冲区为满，两个进程<strong>根本不可能同时进入缓冲区</strong>，此时 <code>mutex</code> 与 empty/full 的作用重合，可以<strong>省略 mutex</strong>。这类「能否省略某信号量」是选择题常考点，判断依据是：<strong>该信号量所要表达的互斥是否已被其它信号量隐含实现</strong>。</p>
+
+<h2>6. 本节小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>三量</strong>：mutex（互斥，初值 1）、empty（空槽，初值 n）、full（产品，初值 0）。<br><strong>两序</strong>：生产者 <code>P(empty)→P(mutex)→放→V(mutex)→V(full)</code>；消费者 <code>P(full)→P(mutex)→取→V(mutex)→V(empty)</code>。<br><strong>一口诀</strong>：申请「先同步后互斥」，释放「先互斥后同步」；P 不能颠倒，颠倒就死锁。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「若缓冲区容量为 n，信号量 empty、full、mutex 的初值」→ 答 <strong>n、0、1</strong>。<br>② 给出生产者/消费者代码，问「能否省略某信号量、P/V 顺序是否正确、是否会死锁」。<br>③ 问「生产者与消费者之间是什么关系」→ 既有<strong>互斥</strong>（争用缓冲区），又有<strong>同步</strong>（empty/full 的先后制约）。<br>④ 计算类：给出生产者、消费者、缓冲区数量，求各信号量可能取值 / 判断某状态（如缓冲满且两生产者在等）的合理性。<br>⑤ 变式：把缓冲区换成「生产者必须与消费者一一对应的同步」或「多缓冲区」模型，核心仍是分清「互斥信号量」与「资源信号量」两类。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>生产者-消费者问题中，生产者把生产的产品放入缓冲区，消费者从缓冲区取走产品。为实现两者之间的同步，需设置信号量 empty 表示空闲缓冲区数目、full 表示产品数目；为保证互斥地访问缓冲区，还需设置互斥信号量 mutex。生产者执行 P(empty)、P(mutex) 后再放入产品，最后执行 V(mutex)、V(full)；消费者执行 P(full)、P(mutex) 后再取出产品，最后执行 V(mutex)、V(empty)。其中两个 P 操作的顺序不能颠倒，否则可能引起死锁。</p>
+</div>
+
+<p>完成下方选择题与代码大题后，进入下一节 <strong>2.3.6 读者-写者问题</strong>。</p>

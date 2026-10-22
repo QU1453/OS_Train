@@ -1,0 +1,151 @@
+<h2>1. 进程控制与「原语」</h2>
+
+<p>进程控制就是操作系统对进程的<strong>创建、撤销、状态转换</strong>等所实施的管理。进程控制的核心是「<strong>改变进程的状态</strong>」，也就是修改进程 PCB 中的状态字段，并把该 PCB 从原队列摘下、挂到新队列上。</p>
+
+<p>由于进程控制要访问并在多个队列间搬动 PCB，这期间不能被打断，否则可能出现「同一进程被两个 CPU 同时调度」之类的错误。因此进程控制功能由一组<strong>原语（Primitive）</strong>实现。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>原语</strong>是一段<strong>不可被中断、不可被并发调用</strong>的程序，具有<strong>原子性</strong>——要么全部执行，要么全都不执行，执行期间不允许被中断。进程控制原语包括：<strong>创建原语、终止原语、阻塞原语、唤醒原语</strong>等。</p>
+</div>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：原子性靠什么保证</div>
+  <p>原语的原子性通常通过「<strong>关中断</strong>」来实现：进入原语时先<strong>关中断</strong>（禁止被中断），执行完再<strong>开中断</strong>。因为进程切换往往由时钟中断引起，关中断后就不会被打断，从而保证原语操作一气呵成。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>「原语」强调的是<strong>原子性</strong>，而不是「很短的程序」。开中断/关中断本身就是<strong>特权指令</strong>，只能在<strong>内核态（管态）</strong>执行，所以进程控制原语属于内核功能，运行在内核态。</p>
+</div>
+
+<h2>2. 进程的创建（创建原语）</h2>
+
+<p>当系统需要产生一个新进程时，由<strong>创建原语</strong>完成。典型触发事件包括：用户登录、作业调度、系统提供服务（如打印请求）、应用进程请求（如 fork 子进程）等。</p>
+
+<p>创建原语的主要步骤：</p>
+
+<ul>
+  <li>① 申请一个<strong>空白 PCB</strong>；</li>
+  <li>② 为新进程<strong>分配所需资源</strong>（内存、I/O 等）；</li>
+  <li>③ <strong>初始化 PCB</strong>（填入 PID、优先级、状态、程序入口、程序计数器等）；</li>
+  <li>④ 将 PCB 插入<strong>就绪队列</strong>（此时进程进入<strong>就绪态</strong>）。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>进程创建后进入<strong>就绪态</strong>（不是运行态）。被创建的新进程被称为<strong>父进程</strong>的<strong>子进程</strong>；子进程可以继承父进程的资源，也可以共享部分资源。</p>
+</div>
+
+<h2>3. 进程的终止（终止原语）</h2>
+
+<p>进程因正常结束、异常结束（越界、非法指令、算术错误、I/O 故障）或被外界强制终止（如被 kill）而消亡，由<strong>终止原语</strong>完成。主要步骤：</p>
+
+<ul>
+  <li>① 根据被终止进程的标识，找到其 <strong>PCB</strong>，读取状态；</li>
+  <li>② 若进程仍在运行，则立即<strong>终止其运行</strong>，剥夺 CPU；</li>
+  <li>③ <strong>回收其占用的全部资源</strong>（内存、I/O、文件等）；</li>
+  <li>④ 将 PCB <strong>从各队列中移除并撤销</strong>。</li>
+</ul>
+
+<div class="blk warn">
+  <div class="blk__label">易错点：撤销父进程</div>
+  <p>撤销一个进程时，通常需要<strong>同时撤销它的所有子进程</strong>，否则子进程可能因失去父进程而无法被正常回收，成为「孤儿」。这是常考细节。</p>
+</div>
+
+<h2>4. 进程的阻塞与唤醒</h2>
+
+<p>阻塞与唤醒是<strong>一对相反的原语</strong>，分别对应进程「因等待事件而暂停」与「事件完成后被唤醒」，正好对应 2.1.2 中「运行态 → 阻塞态」和「阻塞态 → 就绪态」两处转换。</p>
+
+<h3>4.1 阻塞原语（block）</h3>
+
+<p>由<strong>正在运行的进程自己调用</strong>：当它需要等待某事件（请求 I/O、申请不到资源等）时，调用阻塞原语。步骤：</p>
+
+<ul>
+  <li>① 将当前<strong>运行态</strong>进程的状态改为<strong>阻塞态</strong>；</li>
+  <li>② 把它的 PCB 插入相应的<strong>阻塞队列</strong>；</li>
+  <li>③ 转调度程序，从就绪队列另选一个进程投入运行（<strong>保存现场 → 处理机重新分配</strong>）。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>阻塞是进程<strong>主动</strong>的行为（自己调用阻塞原语）；而它<strong>何时被唤醒</strong>则取决于事件，是<strong>被动</strong>的。</p>
+</div>
+
+<h3>4.2 唤醒原语（wakeup）</h3>
+
+<p>由<strong>其它相关进程或系统（如中断处理程序）调用</strong>：当阻塞进程等待的事件发生时，唤醒它。步骤：</p>
+
+<ul>
+  <li>① 在阻塞队列中找到该进程的 PCB；</li>
+  <li>② 将其状态由<strong>阻塞态</strong>改为<strong>就绪态</strong>；</li>
+  <li>③ 把 PCB 从阻塞队列转移到<strong>就绪队列</strong>（<strong>排到队尾</strong>）。</li>
+</ul>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>被唤醒的进程回到<strong>就绪队列队尾</strong>，而不是直接获得 CPU（不能直接转为运行态）。此外，阻塞与唤醒<strong>必须成对使用</strong>，其调用者不同：阻塞是「自己调用」，唤醒是「别人调用」。</p>
+</div>
+
+<h2>5. 进程的切换</h2>
+
+<p>进程切换是指处理机从一个进程转到另一个进程，它是<strong>调度</strong>的结果。切换的核心动作是<strong>保存旧进程的现场、恢复新进程的现场</strong>。</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>步骤</th><th>动作</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>① 保存现场</td><td>把当前进程的<strong>处理机现场</strong>（通用寄存器、PC、PSW 等）保存到其 <strong>PCB</strong> 中</td></tr>
+    <tr><td>② 更新状态</td><td>把当前进程的 PCB 按新状态插入相应队列（就绪/阻塞）</td></tr>
+    <tr><td>③ 选择新进程</td><td>调度程序从<strong>就绪队列</strong>中选择一个进程</td></tr>
+    <tr><td>④ 恢复现场</td><td>从被选中进程 PCB 中恢复其处理机现场，把 CPU 交给它</td></tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：进程上下文</div>
+  <p>进程切换时需要保存和恢复的信息合称<strong>进程上下文</strong>（包含 PCB 中的处理机现场、寄存器、资源清单等）。因此<strong>进程调度会引起进程切换，而进程切换需要「保存/恢复上下文」</strong>，这也是进程切换有开销的原因。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点：调度 ≠ 切换，切换 ≠ 一定发生</div>
+  <p>① 「调度」是选出一个进程的动作；「切换」是真正把 CPU 交出去。被选中的进程若不是当前进程，才需要切换。<br>② 进程切换一定是在<strong>内核态</strong>完成的，且是<strong>内核</strong>的功能，用户程序无法直接触发。</p>
+</div>
+
+<h2>6. 引起各类进程控制的事件（高频对应）</h2>
+
+<table class="tbl">
+  <thead>
+    <tr><th>控制动作</th><th>典型触发事件</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>创建进程</td><td>用户登录、作业调度、系统提供服务、应用请求（如 fork）</td></tr>
+    <tr><td>终止进程</td><td>正常结束、异常结束、外界干预（kill）</td></tr>
+    <tr><td>阻塞进程</td><td>请求 I/O、申请资源失败、等待某信号/事件</td></tr>
+    <tr><td>唤醒进程</td><td>I/O 完成中断、资源被释放、等待的事件到来</td></tr>
+    <tr><td>进程切换</td><td>时间片用完、进程阻塞、更高优先级进程到来、进程终止</td></tr>
+  </tbody>
+</table>
+
+<div class="scene" data-scene="proc-control"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>7. 本节小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>原语</strong>：原子、关中断保证；<strong>创建</strong>：建 PCB→分资源→初始化→入就绪；<strong>终止</strong>：找 PCB→剥夺 CPU→回收资源→撤销 PCB；<strong>阻塞</strong>：自己调用，入阻塞队列；<strong>唤醒</strong>：别人调用，回就绪队尾。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「进程控制用什么实现」→ <strong>原语</strong>，因其具有<strong>原子性</strong>（靠关中断保证）。<br>② 问「创建进程后进入什么状态」→ <strong>就绪态</strong>。<br>③ 问「被唤醒进程被插入到哪里」→ <strong>就绪队列队尾</strong>。<br>④ 问「阻塞原语由谁调用」→ 由<strong>正在运行的进程自己</strong>调用；唤醒原语由<strong>其它进程或系统</strong>调用。<br>⑤ 判断：撤销父进程时应<strong>同时撤销其子进程</strong>。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>进程控制的主要功能是对系统中的所有进程实施有效的管理，包括创建新进程、撤销已有进程、实现进程状态转换等功能。进程控制用原语实现，原语的执行具有原子性。进程的创建、撤销、阻塞、唤醒等操作都由相应的原语完成。</p>
+</div>
+
+<p>完成下方选择题与代码大题后，进入下一节 <strong>2.1.4 进程通信</strong>。</p>

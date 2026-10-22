@@ -1,0 +1,16 @@
+{
+  "id": "1.6",
+  "chapter": "ch01",
+  "order": 6,
+  "title": "虚拟机",
+  "subtitle": "第一类/第二类虚拟机管理程序 · 虚拟化原理 · 优缺点",
+  "tags": [
+    "概念"
+  ],
+  "difficulty": "基础",
+  "minutes": 20,
+  "exam": "两类虚拟机管理程序（VMM）的区分；VMM 的作用；虚拟化的原理与优缺点",
+  "scenes": [
+    "os-vm"
+  ]
+}

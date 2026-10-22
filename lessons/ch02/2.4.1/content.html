@@ -1,0 +1,135 @@
+<h2>2.4.1 死锁的概念</h2>
+
+<p>前面几节讨论进程如何通过同步与互斥来协调对共享资源的访问。但协调机制本身可能引出一种更棘手的僵局：多个进程各自持有对方需要的资源，又都在等待对方释放手中资源，于是谁也无法向前推进。这就是本节的主题——<strong>死锁（Deadlock）</strong>。它是并发程序中最典型的「卡死」现象，也是考研的高频考点。</p>
+
+<h3>1. 死锁的定义</h3>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>死锁</strong>是指多个进程因竞争资源而造成的一种<strong>僵局</strong>：在没有外力干预的情况下，这些进程中的每一个都在等待一个永远不会被满足的条件（等待别的进程释放自己所需的资源），致使它们都无法继续向前推进、永远处于阻塞状态。</p>
+</div>
+
+<p>把这个定义拆成三层来记，考试就好答了：</p>
+
+<ul>
+  <li><strong>起因</strong>：多个进程<strong>竞争不可剥夺资源</strong>（如打印机、临界资源、某些互斥使用的变量）。</li>
+  <li><strong>状态</strong>：每个进程都<strong>持有</strong>一部分资源，同时又在<strong>等待</strong>别的进程释放它需要的资源。</li>
+  <li><strong>结果</strong>：形成<strong>环路等待</strong>，无外力（操作系统干预）则永远无法解开。</li>
+</ul>
+
+<p>一个最经典的例子：系统只有一台打印机和一台扫描仪，进程 P1 占用了打印机、又申请扫描仪；进程 P2 占用了扫描仪、又申请打印机。此时 P1 等 P2 释放扫描仪，P2 等 P1 释放打印机，二者互相等待，谁也无法继续——这就是死锁。</p>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>产生死锁的根源是<strong>资源不足</strong>与<strong>进程推进顺序不合理</strong>。如果资源足够多（每个进程所需资源都能同时满足），或者进程推进顺序得当，就不会发生死锁。</p>
+  <p>特别注意：死锁是<strong>一组进程</strong>之间的相互等待，通常<strong>至少两个</strong>进程才会构成死锁；单独一个进程不会与其他进程互相等待。</p>
+</div>
+
+<h3>2. 死锁、饥饿与死循环的区别</h3>
+
+<p>这三个概念都表现为「无法推进」，但本质完全不同，是概念辨析题的常客。</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>概念</th><th>含义</th><th>是否进入阻塞态</th><th>能否自行解除</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>死锁</strong></td>
+      <td>多个进程因互相等待对方持有的资源而永远无法推进</td>
+      <td>是（均处于阻塞态）</td>
+      <td>不能，需外部干预</td>
+    </tr>
+    <tr>
+      <td><strong>饥饿</strong></td>
+      <td>某个进程因长期得不到所需资源（如调度中被不断插队）而一直无法推进</td>
+      <td>可能是（也可处于就绪/等待）</td>
+      <td>可能自行解除（资源分配策略改变后）</td>
+    </tr>
+    <tr>
+      <td><strong>死循环</strong></td>
+      <td>程序逻辑错误导致某段代码无限重复执行</td>
+      <td>否（进程仍占用 CPU 在运行）</td>
+      <td>不能，需纠正程序或终止进程</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>① <strong>死锁与饥饿不同</strong>：死锁一定发生在<strong>多个</strong>进程之间、且是「互相等待」；饥饿可以只涉及<strong>一个</strong>进程，且不一定阻塞（例如<strong>高响应比优先</strong>或短作业优先可能使长作业长期饥饿，但只要有资源它就能推进）。</p>
+  <p>② <strong>死循环不是死锁</strong>：死循环是程序自身逻辑的问题，进程仍在<strong>运行态</strong>消耗 CPU；死锁时进程都处于<strong>阻塞态</strong>，不消耗 CPU。</p>
+  <p>③ <strong>进入死锁的进程数目一定大于等于 2</strong>，单进程不会死锁。</p>
+</div>
+
+<h3>3. 产生死锁的四个必要条件</h3>
+
+<p>产生死锁必须<strong>同时满足</strong>以下四个条件，只要其中<strong>任意一个不成立</strong>，死锁就不会发生。这四条被称为死锁的四个必要条件（也称 Coffman 条件）。</p>
+
+<div class="blk def">
+  <div class="blk__label">四个必要条件</div>
+  <p><strong>① 互斥条件</strong>：进程对所分配的资源进行<strong>排它性使用</strong>，即某段时间内某资源只被一个进程占用。</p>
+  <p><strong>② 不可剥夺条件（不剥夺条件）</strong>：进程已获得的资源在未使用完之前<strong>不能被强行剥夺</strong>，只能由该进程自己用完后主动释放。</p>
+  <p><strong>③ 请求并保持条件（占有并等待）</strong>：进程已经保持了至少一个资源，但又提出了新的资源请求，而该资源正被其他进程占有，此时请求进程<strong>阻塞</strong>，但对自己已获得的资源<strong>保持不放</strong>。</p>
+  <p><strong>④ 循环等待条件（环路等待）</strong>：存在一个进程—资源的<strong>循环等待链</strong>，链中每个进程已获得的资源同时被链中下一个进程所请求。</p>
+</div>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p>四个必要条件可记为「<strong>互不请循</strong>」——<strong>互</strong>斥、<strong>不</strong>可剥夺、<strong>请</strong>求并保持、<strong>循</strong>环等待。</p>
+  <p>再记一句判据：<em>四条缺一不可，破一条即可防死锁。</em></p>
+</div>
+
+<h3>4. 死锁发生的时机</h3>
+
+<p>死锁发生在进程运行过程中<strong>申请资源</strong>的环节。若系统中有若干进程对资源的请求能满足「持有并等待」的条件，就可能形成循环等待。除可剥夺资源外，系统发生死锁还常与以下情形相关：</p>
+
+<ul>
+  <li>系统中资源<strong>数量有限</strong>且<strong>竞争激烈</strong>；</li>
+  <li>进程对资源的<strong>请求与释放顺序</strong>不一致；</li>
+  <li>进程<strong>同时持有多个资源</strong>且继续申请新资源。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键提醒</div>
+  <p>从资源分配的角度看：如果系统中每类资源的数量都<strong>足够</strong>满足所有进程的最大需求，则一定不会死锁；死锁往往出现在<strong>资源总数不足</strong>、进程又采取「边占边要」策略时。</p>
+</div>
+
+<h3>5. 死锁的处理策略总览</h3>
+
+<p>操作系统处理死锁有四种思路，本节先给总览，后续小节展开：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>策略</th><th>核心思想</th><th>特点</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>死锁预防</strong></td><td>破坏四个必要条件中的<strong>某一个</strong></td><td>静态、保守，资源利用率低，但简单可靠</td></tr>
+    <tr><td><strong>死锁避免</strong></td><td>分配前用<strong>银行家算法</strong>判断是否处于安全状态</td><td>动态判定，允许较灵活分配，需预知最大需求</td></tr>
+    <tr><td><strong>死锁检测与解除</strong></td><td>允许死锁发生，事后<strong>检测</strong>并<strong>解除</strong></td><td>不限制分配，但检测开销大、解除可能损失工作</td></tr>
+    <tr><td><strong>鸵鸟策略</strong></td><td>忽略死锁，假设它不会发生</td><td>工程上常见（如多数通用 OS），成本最低</td></tr>
+  </tbody>
+</table>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「产生死锁的根本原因」→ 答<strong>资源不足</strong>与<strong>进程推进顺序不合理</strong>。</p>
+  <p>② 问「死锁的四个必要条件」→ 答<strong>互斥、不可剥夺、请求并保持、循环等待</strong>，务必四者齐全。</p>
+  <p>③ 问「死锁与饥饿的区别」→ 抓三点：涉及进程<strong>数目</strong>（≥2 vs 可 1 个）、是否<strong>阻塞</strong>、能否<strong>自行解除</strong>。</p>
+  <p>④ 给若干说法判断对错：常见错误有「一个进程也能构成死锁」「死锁等价于死循环」「满足四个必要条件就一定死锁」。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">高频陷阱</div>
+  <p><strong>「满足四个必要条件」≠「一定发生死锁」</strong>。四个必要条件只是死锁<strong>必要</strong>而非<strong>充分</strong>条件。例如循环等待链上若存在两个进程申请的是<strong>同一类资源的同一份</strong>（其实可被满足）或资源可被剥夺，仍可能不死锁。判断是否真正死锁，还要看资源的具体数量与请求关系。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>死锁是指多个进程因竞争资源而造成的一种僵局（Deadly Embrace），若无外力作用，这些进程都将永远不能再向前推进。</p>
+</div>
+
+<p>理解死锁后，下一节将学习最直接的应对手段——<strong>2.4.2 死锁预防</strong>：通过破坏四个必要条件之一来防止死锁的发生。</p>
+<div class="scene" data-scene="deadlock-intro"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+

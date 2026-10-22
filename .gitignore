@@ -1,0 +1,27 @@
+# 依赖与虚拟环境
+.venv/
+.vendor_src/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 打包产物（dist 约 512MB，不入库）
+dist/
+build/_work/
+build/_pyi_cache/
+build/_tmp/
+
+# 运行时数据 / 缓存
+var/
+.cache/
+.trae/
+
+# 系统与工具文件
+*.lnk
+.DS_Store
+Thumbs.db
+
+# 开发期预览页
+_anim_preview.html
+_fig_preview.html

@@ -1,0 +1,129 @@
+<h2>1. 死锁检测的基本思路</h2>
+
+<p><strong>死锁预防</strong>与<strong>死锁避免</strong>都属于「事前」策略：前者不让你形成死锁条件，后者不让你进入不安全状态。而<strong>死锁检测与解除</strong>采取的是「事后」策略：系统<strong>平时不做限制</strong>，允许死锁发生，然后<strong>定期或按需运行检测程序</strong>，一旦发现死锁，再设法<strong>解除</strong>。</p>
+
+<p>这种策略的优点是资源利用率高、并发度高；缺点是检测本身要耗费处理机时间，且解除死锁可能造成一定损失。因此它常用于<strong>死锁发生概率较低</strong>、且一旦发生可承受解除代价的系统。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>死锁检测</strong>是指：通过某种算法判断系统当前是否已经发生了死锁，并<strong>找出参与死锁的进程与资源</strong>。最直观的工具是<strong>资源分配图</strong>，最常用的判定依据是<strong>死锁定理</strong>。</p>
+</div>
+
+<h2>2. 资源分配图（进程—资源图）</h2>
+
+<p>资源分配图用一对二元组 <span class="formula-inline">G = (V, E)</span> 描述系统某一时刻的资源分配情况：</p>
+
+<ul>
+  <li><strong>顶点 V</strong>：分为两类——<strong>进程</strong>（画成圆圈）与<strong>资源</strong>（画成方框，框内的小圆点表示该类资源的<strong>个数</strong>）；</li>
+  <li><strong>边 E</strong>：分为两类——<strong>请求边</strong> <span class="formula-inline">P<sub>i</sub> → R<sub>j</sub></span>（进程向资源申请，画成由进程指向资源方框的箭头）与<strong>分配边</strong> <span class="formula-inline">R<sub>j</sub> → P<sub>i</sub></span>（资源已分配给进程，画成由资源方框内的圆点指向进程的箭头）。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：死锁定理</div>
+  <p>① 若资源分配图<strong>不可完全化简</strong>，则系统处于<strong>死锁</strong>状态；<br>② 若资源分配图<strong>可完全化简</strong>，则系统<strong>不产生死锁</strong>；<br>③ 若图中存在<strong>环路</strong>，则可能发生死锁——<strong>环路只是死锁的必要条件，不是充分条件</strong>（当每类资源只有一个实例时，环路才是死锁的充分必要条件）。</p>
+</div>
+
+<h2>3. 资源分配图的化简</h2>
+
+<p>化简（reduction）的过程，本质上是模拟「进程可以顺利运行完成并归还资源」：</p>
+
+<pre class="formula">① 找一个“既不阻塞、也非孤立”的进程结点 P：它能获得所需全部资源
+   （即它所有的请求边都能被对应资源满足）。
+② 若找到，则令该进程运行完成，并：
+       去掉 P 的所有请求边；
+       去掉 P 的所有分配边（把资源归还系统）。
+③ 若图中还有边，转 ① 继续化简；否则结束。
+④ 若最终能去掉所有边，则图“可完全化简”，系统无死锁；
+   否则存在无法化简的部分，其上的进程即为死锁进程。</pre>
+
+<p>化简中「归还资源」对应到矩阵算法，就是把该进程已占用的资源<strong>加回到可用资源 Work 中</strong>，这正是下一节检测算法的核心动作。</p>
+
+<h2>4. 用矩阵实现的死锁检测算法</h2>
+
+<p>当系统规模较大时，用图来化简不方便，通常改用矩阵。设系统有 n 个进程、m 类资源，维护：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>数据结构</th><th>含义</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Available</strong></td><td>当前各类资源的可用数量（一维，长度 m）</td></tr>
+    <tr><td><strong>Allocation</strong></td><td>已分配给每个进程的资源（n × m）</td></tr>
+    <tr><td><strong>Request</strong></td><td>每个进程<strong>还需要的</strong>资源（n × m，对应资源分配图中进程发出的请求边）</td></tr>
+  </tbody>
+</table>
+
+<pre class="formula">① 令 Work = Available；Finish[i] = false（i = 0,1,…,n−1）。
+② 找一个满足 Finish[i] == false 且 Request[i][j] ≤ Work[j]（对一切 j）的进程 i。
+③ 若找到：
+        Work = Work + Allocation[i]；   // 进程 i 可完成，归还其占有的资源
+        Finish[i] = true；转 ②。
+   否则转 ④。
+④ 若存在 Finish[i] == false 的进程，则这些进程处于死锁；否则系统无死锁。</pre>
+
+<div class="blk memo">
+  <div class="blk__label">与银行家算法对照记忆</div>
+  <p>二者结构几乎相同：都是 <strong>work 从 available 出发、满足请求就把 allocation 加回 work</strong>。区别在于——<strong>银行家算法用 Max−Allocation 得到的 Need 判断，是「事前避免」</strong>；<strong>检测算法用进程已提出的 Request（当前实际请求）判断，是「事后检测」</strong>。</p>
+</div>
+
+<h2>5. 动画演示</h2>
+
+<p>下面的演示将展示资源分配图的化简过程：寻找可完成的进程、去掉请求边与分配边、归还资源，最终判断是否可完全化简。</p>
+
+<div class="scene" data-scene="deadlock-detect"></div>
+
+<h2>6. 死锁的解除</h2>
+
+<p>检测出死锁后，就要<strong>解除死锁</strong>。常用的三种方法如下：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>方法</th><th>做法</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>资源剥夺法</strong></td>
+      <td>挂起（剥夺）某些死锁进程占用的资源，将它们分配给其他死锁进程。</td>
+      <td>需防止被剥夺资源的进程<strong>长期得不到资源而饥饿</strong>。</td>
+    </tr>
+    <tr>
+      <td><strong>撤销进程法</strong></td>
+      <td>强制撤销部分甚至全部死锁进程，剥夺其资源。</td>
+      <td>实现简单，但代价可能很大（被撤销进程的工作全部作废）。</td>
+    </tr>
+    <tr>
+      <td><strong>进程回退法</strong></td>
+      <td>让一个或多个死锁进程<strong>回退到足以解除死锁的某个时刻</strong>，即「时光倒流」。</td>
+      <td>需要系统记录进程的历史信息、设置还原点，开销较大。</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">撤销/剥夺对象如何选择</div>
+  <p>选择「牺牲」哪个进程时，通常综合考虑：① 进程的优先级；② 已执行时间（越短越可牺牲）；③ 还需多久完成；④ 已占用资源种类与数量；⑤ 是交互式进程还是批处理进程。<strong>原则是使解除死锁的总代价最小。</strong></p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>① <strong>资源分配图中有环 ≠ 一定死锁</strong>：环路是死锁的必要条件；当资源有多个实例时，有环但可化简则说明没有死锁。<br>② <strong>死锁检测 vs 死锁避免</strong>：检测在死锁<strong>发生之后</strong>进行，避免在分配<strong>之前</strong>进行。<br>③ 检测算法中判断依据是进程<strong>当前的请求 Request</strong>，不是最大需求 Max。</p>
+</div>
+
+<h2>7. 小结与真题问法</h2>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 给出资源分配图，问「可化简/不可化简」或「哪个进程死锁」——按化简步骤，能完成并归还资源的进程可消去，消不去的就是死锁进程；<br>② 用矩阵数据运行检测算法，求死锁进程集合；<br>③ 问「有环是否一定死锁」——<strong>不一定</strong>；「资源可完全化简说明什么」——<strong>无死锁</strong>；<br>④ 问解除死锁的方法并比较代价。</p>
+</div>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p>「<strong>事后检测看请求，能借就还消掉它；化简干净无死锁，消不掉的便是它（死锁进程）；解除三招：剥夺、撤销、回退。</strong>」</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>死锁定理：如果某时刻系统的资源分配图是不可完全简化的，那么此时系统处于死锁状态。死锁检测算法通过设置工作向量和完成标志，反复寻找可以运行完成的进程并回收其资源，最终仍未完成的进程即为死锁进程。解除死锁可采用资源剥夺法、撤销进程法和进程回退法。</p>
+</div>
+
+<p>完成下方选择题后，进入本章小结 <strong>2.4.5 本章小结与真题精讲</strong>。</p>

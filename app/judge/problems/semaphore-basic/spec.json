@@ -1,0 +1,21 @@
+{
+  "id": "semaphore-basic",
+  "title": "信号量机制：用 PV 实现临界区互斥",
+  "kind": "concurrency",
+  "entry": "run",
+  "config": {
+    "n_procs": 4,
+    "incs_per_proc": 120,
+    "exclusive_labels": ["cs"],
+    "require_regions": ["cs"]
+  },
+  "runs": 15,
+  "run_timeout_sec": 3.0,
+  "fail_fast": false,
+  "invariants": [
+    "no_error",
+    "no_lost_update",
+    "no_concurrent",
+    "no_deadlock"
+  ]
+}

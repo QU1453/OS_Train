@@ -1,0 +1,16 @@
+{
+  "id": "2.1.4",
+  "chapter": "ch02",
+  "order": 11,
+  "title": "进程通信",
+  "subtitle": "共享内存 · 消息传递 · 管道",
+  "tags": [
+    "概念"
+  ],
+  "difficulty": "基础",
+  "minutes": 22,
+  "exam": "共享内存、消息传递、管道；直接通信与间接通信",
+  "scenes": [
+    "proc-ipc"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "sem-sync-mutex",
+  "title": "用信号量实现同步与互斥（单缓冲生产者—消费者）",
+  "kind": "concurrency",
+  "entry": "run",
+  "config": {
+    "capacity": 1,
+    "n_producers": 1,
+    "n_consumers": 1,
+    "items_per_producer": 12,
+    "expected_total": 12
+  },
+  "runs": 15,
+  "run_timeout_sec": 3.0,
+  "fail_fast": false,
+  "invariants": [
+    "no_error",
+    "no_overflow",
+    "no_underflow",
+    "no_lost_update",
+    "liveness",
+    "no_deadlock"
+  ]
+}

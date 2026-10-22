@@ -1,0 +1,16 @@
+{
+  "id": "2.4.2",
+  "chapter": "ch02",
+  "order": 26,
+  "title": "死锁预防",
+  "subtitle": "破坏四条件 · 静态策略 · 优缺点",
+  "tags": [
+    "概念"
+  ],
+  "difficulty": "提高",
+  "minutes": 24,
+  "exam": "破坏互斥、不可剥夺、请求并保持、循环等待四个条件；死锁预防策略",
+  "scenes": [
+    "deadlock-prevent"
+  ]
+}

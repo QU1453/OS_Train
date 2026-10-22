@@ -1,0 +1,116 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "下列实现临界区互斥的方法中，因强制两进程<strong>轮流</strong>使用临界区而违背「<strong>空闲让进</strong>」准则的是（　）。",
+      "options": [
+        "单标志法",
+        "双标志先检查法",
+        "Peterson 算法",
+        "中断屏蔽方法"
+      ],
+      "answer": 0,
+      "explain": "<strong>单标志法</strong>用一个公有变量 turn 表示允许进入的进程号，两进程必须交替进入：即使临界区空闲，只要「使用权」不在自己手上就无法进入，因此违背<strong>空闲让进</strong>。双标志先检查法满足空闲让进但违背忙则等待；Peterson 与中断屏蔽方法都满足空闲让进。故选 A。"
+    },
+    {
+      "id": "q2",
+      "stem": "双标志先检查法可能导致两个进程<strong>同时进入</strong>临界区，其根本原因是（　）。",
+      "options": [
+        "标志变量的初值设置错误",
+        "「检查对方标志」与「置自己的标志」两个操作不能一气呵成，可被进程切换打断",
+        "没有设置公共的 turn 变量",
+        "关中断的时间过长"
+      ],
+      "answer": 1,
+      "explain": "双标志先检查法先执行 <code>while(flag[对方])</code> 检查、再执行 <code>flag[自己]=true</code> 上锁。若某进程刚检查完对方为空闲、尚未上锁时被切换，另一进程也检查到对方空闲并上锁，随后两者都进入临界区，<strong>互斥被破坏</strong>。根本原因是<strong>检查与上锁不能原子完成</strong>，故选 B。"
+    },
+    {
+      "id": "q3",
+      "stem": "双标志后检查法（先置自己的标志，再检查对方标志）可能导致（　）。",
+      "options": [
+        "两进程同时进入临界区",
+        "两进程都无法进入临界区，互相僵持",
+        "违背「忙则等待」准则",
+        "无法保证互斥"
+      ],
+      "answer": 1,
+      "explain": "双标志后检查法「先上锁、后检查」，避免了同时闯入，互斥得以保证；但若两进程几乎同时置位，则双方检查时都发现对方想进而互相等待，谁都进不去——既违背<strong>空闲让进</strong>，又违背<strong>有限等待</strong>，可能造成饥饿。故选 B。"
+    },
+    {
+      "id": "q4",
+      "stem": "能<strong>同时满足</strong>空闲让进、忙则等待和有限等待三条准则的软件互斥方法是（　）。",
+      "options": [
+        "单标志法",
+        "双标志先检查法",
+        "双标志后检查法",
+        "Peterson 算法"
+      ],
+      "answer": 3,
+      "explain": "<strong>Peterson 算法</strong>把 flag[] 与 turn 结合，并让进程主动礼让，可证明其满足<strong>空闲让进、忙则等待、有限等待</strong>三条准则（但仍有忙等，不满足让权等待）。单标志法违空闲让进，双标志先检查法违忙则等待，双标志后检查法违空闲让进与有限等待，均不能同时满足三条。故选 D。"
+    },
+    {
+      "id": "q5",
+      "stem": "中断屏蔽方法不能用于多处理机系统，其原因是（　）。",
+      "options": [
+        "关中断会显著降低单台处理机的运算速度",
+        "关中断指令是特权指令，用户进程不能执行",
+        "关闭一个处理机的中断，不能阻止其它处理机上的进程并发访问临界资源",
+        "关中断后必然引发死锁"
+      ],
+      "answer": 2,
+      "explain": "中断屏蔽只能关闭<strong>本处理机</strong>的中断、阻止本机切换，但<strong>其它处理机</strong>上的进程仍可并发访问同一临界资源，因此<strong>不适用于多处理机</strong>，C 正确。A、B 是中断屏蔽方法的其它局限（降低并发能力、只适用于内核进程），但不是「不能用于多处理机」的原因；关中断并不必然死锁，D 错误。"
+    },
+    {
+      "id": "q6",
+      "stem": "关于 TestAndSet（TS）指令，下列叙述中<strong>错误</strong>的是（　）。",
+      "options": [
+        "它由硬件实现，能原子地完成「读出旧值并把标志置为 true」",
+        "它适用于多处理机环境",
+        "使用它的进程在等待时会让出处理机，满足让权等待",
+        "它通常用 while 循环反复调用，存在忙等"
+      ],
+      "answer": 2,
+      "explain": "TestAndSet 由硬件保证「读旧值 + 置 true」的<strong>原子性</strong>，适用于多处理机（A、B 正确）；但其等待方式是 <code>while(TestAndSet(&lock));</code> 的<strong>忙等</strong>，进程不会让出处理机，<strong>不满足让权等待</strong>，故 C 错误、D 正确。"
+    },
+    {
+      "id": "q7",
+      "stem": "下列实现互斥的方法中，<strong>满足</strong>「让权等待」准则的是（　）。",
+      "options": [
+        "单标志法",
+        "Peterson 算法",
+        "TestAndSet 指令",
+        "中断屏蔽方法"
+      ],
+      "answer": 3,
+      "explain": "软件方法（单标志法、双标志法、Peterson 算法）以及硬件方法 TestAndSet、Swap 都靠 <code>while</code> 循环<strong>忙等</strong>，均不满足让权等待。<strong>中断屏蔽方法</strong>在进入临界区前关中断，直接禁止了进程切换，进程无需空转，是这些方法中唯一不需要忙等的，故选 D。"
+    },
+    {
+      "id": "q8",
+      "stem": "下列关于临界区互斥实现方法的叙述中，<strong>正确</strong>的是（　）。",
+      "options": [
+        "软件方法（含 Peterson 算法）都不满足让权等待",
+        "双标志先检查法满足忙则等待",
+        "TestAndSet 与 Swap 指令在等待时会让出处理机",
+        "中断屏蔽方法适用于多处理机系统"
+      ],
+      "answer": 0,
+      "explain": "软件方法都采用 while 忙等，<strong>均不满足让权等待</strong>，A 正确。双标志先检查法因检查与上锁可被打断而违背<strong>忙则等待</strong>，B 错误；TestAndSet、Swap 等待时是忙等、不让出处理机，C 错误；中断屏蔽不适用于多处理机，D 错误。故选 A。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "临界区互斥：标志法操作序列模拟",
+      "prompt": "<p>为验证某种「标志法」能否真正保证互斥，我们需要按给定的操作序列进行模拟。给你一个操作序列 <code>ops</code>，每个元素形如 <code>\"i:动作\"</code>：</p><ul><li><code>i</code> 为进程号，取值为 <code>0</code> 或 <code>1</code>；</li><li>动作有四种：<code>set</code>（进程 i 置标志，表示想进入）、<code>clear</code>（进程 i 清标志）、<code>enter</code>（进程 i 进入临界区）、<code>exit</code>（进程 i 离开临界区）。</li></ul><p>请<strong>按出现顺序逐条执行</strong>：维护「当前临界区内进程数」和「历史最大值」，遇到 <code>enter</code> 就 +1 并更新最大值，遇到 <code>exit</code> 就 −1，<code>set</code>/<code>clear</code> 仅用于维护标志状态。最后返回<strong>临界区内同时存在的最大进程数</strong>。</p><p>若返回值为 1，说明任意时刻临界区内至多一个进程，互斥成立；若出现 2，则说明两进程可同时进入临界区，互斥被破坏。</p>",
+      "c_reference": "#include <stdio.h>\n\n/* 标志法操作序列模拟：\n * ops 形如 \"0:set\" \"1:enter\" ...（进程号:动作）\n * 返回临界区内同时存在的最大进程数。\n */\nint solve(const char **ops, int n) {\n    int flag[2] = {0, 0};\n    int in_cs = 0, max_cs = 0;\n    for (int k = 0; k < n; k++) {\n        int i = ops[k][0] - '0';   /* 进程号 */\n        const char *act = ops[k] + 2;  /* 跳过 \"i:\" */\n        if (act[0] == 's') {                 /* set */\n            flag[i] = 1;\n        } else if (act[0] == 'c') {          /* clear */\n            flag[i] = 0;\n        } else if (act[0] == 'e' && act[1] == 'n') {  /* enter */\n            if (++in_cs > max_cs) max_cs = in_cs;\n        } else if (act[0] == 'e' && act[1] == 'x') {  /* exit */\n            in_cs--;\n        }\n    }\n    (void)flag;\n    return max_cs;\n}",
+      "python_reference": "def solve(ops):\n    flag = [False, False]\n    in_cs = 0\n    max_cs = 0\n    for op in ops:\n        idx_str, action = op.split(\":\")\n        i = int(idx_str)\n        if action == \"set\":\n            flag[i] = True\n        elif action == \"clear\":\n            flag[i] = False\n        elif action == \"enter\":\n            in_cs += 1\n            if in_cs > max_cs:\n                max_cs = in_cs\n        elif action == \"exit\":\n            in_cs -= 1\n    return max_cs",
+      "starter_python": "def solve(ops):\n    # TODO: 按顺序执行操作序列，返回临界区内同时存在的最大进程数。\n    # 提示：维护 in_cs（当前临界区内进程数）与 max_cs（历史最大值）；\n    #       \"i:enter\" 时 in_cs += 1 并更新 max_cs，\"i:exit\" 时 in_cs -= 1。\n    pass",
+      "judge_problem_id": "critical-section-flag",
+      "hints": [
+        "每个操作字符串用 split(\":\") 拆成「进程号」和「动作」两部分。",
+        "enter 时把当前临界区进程数加一，并及时更新历史最大值 max_cs。",
+        "set / clear 只维护标志数组，是否发生并发进入由 enter/exit 的配对情况决定。"
+      ]
+    }
+  ]
+}

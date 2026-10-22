@@ -1,0 +1,24 @@
+{
+  "id": "rw-reader-writer",
+  "title": "读者—写者问题（读/写互斥）",
+  "kind": "concurrency",
+  "entry": "run",
+  "config": {
+    "n_readers": 4,
+    "n_writers": 2,
+    "rounds_per_reader": 3,
+    "rounds_per_writer": 6,
+    "exclusive_labels": ["write"],
+    "conflict_labels": [["read", "write"]],
+    "require_regions": ["read", "write"]
+  },
+  "runs": 15,
+  "run_timeout_sec": 3.0,
+  "fail_fast": false,
+  "invariants": [
+    "no_error",
+    "no_lost_update",
+    "no_concurrent",
+    "no_deadlock"
+  ]
+}

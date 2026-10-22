@@ -1,0 +1,116 @@
+<h2>1. 问题背景与模型</h2>
+
+<p>读者-写者问题是另一个经典的并发模型。一个<strong>共享数据对象</strong>（如文件、数据库）同时被两类进程访问：<strong>读者进程</strong>只读取数据，<strong>写者进程</strong>更新数据。与生产者-消费者不同，这里的核心矛盾不是「空间有限」，而是<strong>「读」与「写」必须遵循不同的并发规则</strong>。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>读者-写者问题</strong>：允许多个读者进程<strong>同时读</strong>共享对象；但任何写者进程与其它进程（无论读还是写）都必须<strong>互斥</strong>。也就是说，读者之间可并发，写者之间互斥，读者与写者之间互斥。</p>
+</div>
+
+<h2>2. 三条约束（必须背熟）</h2>
+
+<table class="tbl">
+  <thead>
+    <tr><th>进程组合</th><th>能否同时访问共享对象</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>读者 ↔ 读者</td><td><strong>允许并发</strong></td><td>读操作不改变数据，多个读者可同时进行</td></tr>
+    <tr><td>读者 ↔ 写者</td><td><strong>必须互斥</strong></td><td>写者修改数据时不允许读者读到不一致的中间状态</td></tr>
+    <tr><td>写者 ↔ 写者</td><td><strong>必须互斥</strong></td><td>两个写者同时改数据会互相覆盖</td></tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>一句话概括三条约束：<strong>「读与读可共享，读与写、写与写互斥」</strong>。因此只需要一个信号量 <strong>wmutex</strong>（初值 1）来同时承担「写者互斥」与「读/写互斥」两个职责；而读者之间不需要互斥，所以引入一个计数器 <strong>readcount</strong> 记录当前正在读的读者数目。</p>
+</div>
+
+<h2>3. 读者优先解法（重点掌握）</h2>
+
+<p>「读者优先」指：只要还有读者在读，后来的读者可以直接进入，写者必须等到<strong>所有读者离开</strong>后才能写。其实现要点是——<strong>第一个进入的读者负责给写者上锁，最后一个离开的读者负责给写者解锁</strong>。</p>
+
+<pre class="formula">int readcount = 0;        // 正在读的读者数目
+semaphore rmutex = 1;     // 保护 readcount 的互斥信号量
+semaphore wmutex = 1;     // 写者互斥，兼作读/写互斥
+
+reader() {
+    while (1) {
+        P(rmutex);                // 开始修改 readcount，需互斥
+        if (readcount == 0)       // 我是第一个读者
+            P(wmutex);            //   锁住写者
+        readcount++;              // 读者计数 +1
+        V(rmutex);                // 释放 readcount 的保护
+        // ---- 读数据 ----
+        P(rmutex);
+        readcount--;              // 读者计数 -1
+        if (readcount == 0)       // 我是最后一个读者
+            V(wmutex);            //   放行写者
+        V(rmutex);
+    }
+}
+
+writer() {
+    while (1) {
+        P(wmutex);                // 与读者、其它写者互斥
+        // ---- 写数据 ----
+        V(wmutex);
+    }
+}</pre>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>① <strong>readcount 必须用 rmutex 保护</strong>：<code>readcount++</code> 和判断 <code>readcount==1</code> 是「读—改—写」，多个读者并发执行会出现<strong>丢失更新</strong>，导致既漏锁又漏放，读/写互斥被破坏。这是本节最高频的失分点。<br>② <strong>判断的是「第一个」与「最后一个」</strong>：只有 <code>readcount==1</code>（加之前）才 <code>P(wmutex)</code>，只有 <code>readcount==0</code>（减之后）才 <code>V(wmutex)</code>；用错条件会造成写者永久等待或读写冲突。<br>③ 写者的 <code>P(wmutex)/V(wmutex)</code> 必须<strong>成对</strong>包裹整个写过程，且不要与读者的 rmutex 混淆。</p>
+</div>
+
+<h2>4. 读者优先的隐患：写者饥饿</h2>
+
+<p>在「读者优先」策略下，只要读者源源不断到来，<code>readcount</code> 就不会归零，写者始终无法获得 <code>wmutex</code>，可能<strong>长期得不到服务，即写者饥饿（starvation）</strong>。若要求「写优先」或「公平」，需要再增加一个信号量控制读者的进入：</p>
+
+<pre class="formula">// 写优先（读者间仍可并发，但新读者要给等待的写者让路）
+semaphore wmutex = 1;     // 读/写、写/写互斥
+semaphore rmutex = 1;     // 保护 readcount
+semaphore w = 1;          // 用于「写优先」的额外信号量
+int readcount = 0;
+
+reader() {
+    P(w);                 // 若已有写者在等，新读者在此阻塞
+    P(rmutex);
+    if (readcount == 0) P(wmutex);
+    readcount++;
+    V(rmutex);
+    V(w);
+    // 读数据……
+    P(rmutex);
+    readcount--;
+    if (readcount == 0) V(wmutex);
+    V(rmutex);
+}
+writer() {
+    P(w);                 // 有读者时写者在此等待
+    P(wmutex);
+    // 写数据……
+    V(wmutex);
+    V(w);
+}</pre>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「读者-写者问题中读、写各有何约束」→ 读读共享、读写互斥、写写互斥。<br>② 给出读者代码，问「rmutex 的作用」→ 保护对 <strong>readcount</strong> 的互斥访问，防止计数丢失更新。<br>③ 问「为什么第一个读者要 P(wmutex)、最后一个读者要 V(wmutex)」→ 因为只有 <strong>wmutex</strong> 承担读/写互斥，多个读者只应整体占用一次，用计数器保证上锁、解锁各一次。<br>④ 指出「读者优先会造成写者饥饿」，并据此改写为写优先（增加一个信号量让新读者排队）。<br>⑤ 变式：与生产者-消费者对比，考查「是否有缓冲区、是同步还是互斥为主」的辨析。</p>
+</div>
+
+<div class="scene" data-scene="reader-writer"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>5. 本节小结</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>三约束</strong>：读读共享、读写互斥、写写互斥。<br><strong>两信号量 + 一计数</strong>：<code>wmutex</code>（写者互斥兼读写互斥，初值 1）、<code>rmutex</code>（保护 readcount，初值 1）、<code>readcount</code>（读者计数，初值 0）。<br><strong>一口诀</strong>：<strong>「第一个读者锁写者，最后一个读者放写者」</strong>；readcount 的加减必须在 rmutex 保护下进行。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>读者-写者问题要求：允许多个读者同时读，但不允许读者与写者同时访问，也不允许多个写者同时访问。为解决该问题，设置互斥信号量 rmutex 用于保护读者计数变量 readcount，设置信号量 wmutex 用于实现写者互斥及读写互斥。读者进入时先对 rmutex 加锁，若为第一个读者则对 wmutex 加锁，然后 readcount 加一并释放 rmutex；离开时对 readcount 减一，若为最后一个读者则释放 wmutex。</p>
+</div>
+
+<p>完成下方选择题与代码大题后，进入下一节 <strong>2.3.7 哲学家进餐问题</strong>。</p>

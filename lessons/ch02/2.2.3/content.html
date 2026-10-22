@@ -1,0 +1,120 @@
+<h2>1. 为什么要用「指标」衡量调度算法</h2>
+
+<p>调度算法决定「CPU 该分给哪个进程」。不同的算法会让作业「等多久、多久完成、系统效率多高」千差万别。为了客观衡量各种调度算法的好坏，需要一组<strong>评价指标</strong>。408 中常考的是<strong>周转时间、带权周转时间、等待时间、响应时间</strong>，以及系统的 <strong>CPU 利用率</strong>和<strong>吞吐量</strong>。</p>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：面向用户 vs 面向系统</div>
+  <p>评价指标可分两类：<br><strong>面向用户（关注进程体验）</strong>：周转时间、带权周转时间、等待时间、响应时间；<br><strong>面向系统（关注整体效率）</strong>：CPU 利用率、系统吞吐量。</p>
+</div>
+
+<h2>2. CPU 利用率</h2>
+
+<p>CPU 利用率衡量 CPU 有多「忙」：</p>
+
+<pre class="formula">CPU 利用率 = 忙碌（CPU 运行）时间 / 总时间</pre>
+
+<p>在多道程序系统中，当一道程序因 I/O 而等待时，可让另一道程序占用 CPU，从而提高 CPU 利用率。因此在设计调度算法时，希望<strong>尽量让 CPU 保持忙碌</strong>。</p>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>CPU 利用率还包括内核程序运行的时间，不只是用户程序。当系统<strong>完全空闲</strong>时，利用率最低（为 0）。</p>
+</div>
+
+<h2>3. 系统吞吐量</h2>
+
+<p>吞吐量衡量系统在单位时间内「干完多少活」：</p>
+
+<pre class="formula">系统吞吐量 = 单位时间内完成的作业（进程）数</pre>
+
+<p>吞吐量越大，系统效率越高。但要注意：吞吐量与「周转时间小」并不总是一致——例如短作业会很快完成、提高吞吐量，但可能让长作业「饿死」，此时长作业的周转时间反而变大。</p>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>吞吐量关注<strong>系统效率</strong>（完成的作业数量），而周转时间关注<strong>单个作业</strong>从提交到完成的时长，二者<strong>角度不同</strong>，不要混为一谈。</p>
+</div>
+
+<h2>4. 周转时间与带权周转时间（重点、高频）</h2>
+
+<p>作业从被提交给系统，到完成并获得结果，所经历的全部时间称为<strong>周转时间</strong>。它由四部分构成：</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>作业周转时间 = 作业完成时间 − 作业到达（提交）时间</strong><br>等价地，周转时间 = <strong>等待时间 + 处理机执行（服务）时间 + I/O 等待时间</strong> 等全部时间之和。</p>
+</div>
+
+<p>由于不同作业本身的「实际运行时间（服务时间）」长短不同，单看周转时间无法公平比较。于是引入<strong>带权周转时间</strong>（又称「带权周转时间」/「带权周转时间」）：</p>
+
+<pre class="formula">带权周转时间 = 作业周转时间 / 作业实际运行时间（服务时间）（≥ 1）</pre>
+
+<p>带权周转时间表示「周转时间是实际运行时间的多少倍」，<strong>越小越好</strong>。<br>对于整个作业序列，常计算<strong>平均周转时间</strong>与<strong>平均带权周转时间</strong>：</p>
+
+<pre class="formula">平均周转时间       = (Σ 各作业周转时间) / 作业数
+平均带权周转时间   = (Σ 各作业带权周转时间) / 作业数</pre>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>① 带权周转时间<strong>恒 ≥ 1</strong>，等于 1 表示作业一到达就立即运行并连续运行到结束（没有任何等待）。<br>② 周转时间、带权周转时间都<strong>越小越好</strong>。<br>③ 做题时先画出作业的执行时间轴，标出每个作业的「开始时刻」和「完成时刻」，再套公式。</p>
+</div>
+
+<div class="blk memo">
+  <div class="blk__label">计算示例（顺序执行，非抢占）</div>
+  <p>设三个作业按给定顺序 A、B、C 依次执行：</p>
+  <table class="tbl">
+    <thead>
+      <tr><th>作业</th><th>到达时间</th><th>服务时间</th><th>开始时间</th><th>完成时间</th><th>周转时间</th><th>带权周转时间</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>A</td><td>0</td><td>7</td><td>0</td><td>7</td><td>7</td><td>7/7 = 1.00</td></tr>
+      <tr><td>B</td><td>2</td><td>4</td><td>7</td><td>11</td><td>11 − 2 = 9</td><td>9/4 = 2.25</td></tr>
+      <tr><td>C</td><td>4</td><td>1</td><td>11</td><td>12</td><td>12 − 4 = 8</td><td>8/1 = 8.00</td></tr>
+    </tbody>
+  </table>
+  <p>平均周转时间 = (7 + 9 + 8) / 3 = 24 / 3 = <strong>8.0</strong>；平均带权周转时间 = (1.00 + 2.25 + 8.00) / 3 = 11.25 / 3 = <strong>3.75</strong>。<br>注意：若「当前时间」小于某作业到达时间，则<strong>开始时间取二者较大者</strong>（CPU 会空闲等待它到达）。</p>
+</div>
+
+<h2>5. 等待时间</h2>
+
+<p><strong>等待时间</strong>是指进程在<strong>就绪队列中等待</strong>的时间（等待 CPU 的时间）（有的定义还包含在阻塞队列中等待 I/O 的时间）。对<strong>作业</strong>而言，常简化为：</p>
+
+<pre class="formula">作业等待时间 = 作业周转时间 − 服务时间 = 开始时间 − 到达时间</pre>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>① 等待时间<strong>不包括作业自身的执行时间</strong>，只统计「等待」的部分。<br>② 调度算法<strong>只能影响等待时间（占用 CPU 前的等待）</strong>，无法影响作业实际的运行时间和 I/O 时间。因此调度算法优化的核心目标就是<strong>缩短等待时间</strong>。</p>
+</div>
+
+<h2>6. 响应时间</h2>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>响应时间</strong> = 从用户提交请求（或作业到达）到系统<strong>首次产生响应</strong>所经历的时间。它强调「交互式系统中用户感受到的快慢」。</p>
+</div>
+
+<p>响应时间越短，用户感觉系统「反应越快」。分时/交互式系统特别关注响应时间，因此常采用<strong>时间片轮转</strong>等能保证及时响应的算法。</p>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：四个时间指标的关系</div>
+  <p>① <strong>周转时间</strong>：从提交到<strong>完成</strong>的全过程时间。<br>② <strong>带权周转时间</strong>：周转时间 ÷ 服务时间，恒 ≥ 1。<br>③ <strong>等待时间</strong>：周转时间中「等待」的那部分（周转时间 − 服务时间）。<br>④ <strong>响应时间</strong>：从提交到<strong>首次响应</strong>的时间，通常比周转时间短。<br>注意：前三个的终点是「完成」，响应时间的终点是「第一次响应」，不要混淆。</p>
+</div>
+
+<div class="scene" data-scene="sched-metrics"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>7. 本节小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>周转</strong> = 完成 − 到达；<strong>带权周转</strong> = 周转 ÷ 服务（≥1）；<strong>等待</strong> = 周转 − 服务；<strong>响应</strong> = 首次响应 − 提交。四者皆<strong>越小越好</strong>；CPU 利用率、吞吐量<strong>越大越好</strong>。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 给出一组作业的到达时间与服务时间，某算法下的执行顺序，求<strong>平均周转时间</strong>与<strong>平均带权周转时间</strong>。<br>② 判断：「带权周转时间可能小于 1」→ <strong>错误</strong>，恒 ≥ 1。<br>③ 问「调度算法能影响哪个指标」→ 主要是<strong>等待时间</strong>（以及由它决定的周转、带权周转、响应时间）。<br>④ 问「交互式系统最关注的指标」→ <strong>响应时间</strong>。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>周转时间是指从作业被提交给系统开始，到作业完成为止的这段时间间隔。带权周转时间是指作业周转时间与作业实际运行时间的比值。等待时间指进程处于等待处理机状态时间之和。对于交互式系统，更关心的是响应时间。</p>
+</div>
+
+<p>完成下方选择题与代码大题后，进入下一节 <strong>2.2.4 调度算法</strong>。</p>

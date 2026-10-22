@@ -1,0 +1,40 @@
+{
+  "id": "process-control",
+  "title": "进程控制（就绪队列与阻塞队列）",
+  "kind": "deterministic",
+  "entry": "solve",
+  "arg_names": ["ops"],
+  "compare": "exact",
+  "cases": [
+    {
+      "name": "阻塞后唤醒，队列顺序改变",
+      "input": { "ops": ["create p1", "create p2", "create p3", "block p2", "wakeup p2"] },
+      "expected": ["p1", "p3", "p2"]
+    },
+    {
+      "name": "唤醒后回到队尾",
+      "input": { "ops": ["create p1", "create p2", "block p1", "create p3", "wakeup p1"] },
+      "expected": ["p2", "p3", "p1"]
+    },
+    {
+      "name": "exit 从就绪队列移除",
+      "input": { "ops": ["create p1", "create p2", "create p3", "exit p2"] },
+      "expected": ["p1", "p3"]
+    },
+    {
+      "name": "wakeup 一个不在阻塞集合中的 pid 应被忽略",
+      "input": { "ops": ["create p1", "wakeup p2", "create p2"] },
+      "expected": ["p1", "p2"]
+    },
+    {
+      "name": "阻塞中的进程被 exit",
+      "input": { "ops": ["create p1", "create p2", "block p2", "exit p2", "create p3"] },
+      "expected": ["p1", "p3"]
+    },
+    {
+      "name": "反复阻塞唤醒保持单元素队列",
+      "input": { "ops": ["create p1", "block p1", "wakeup p1", "block p1", "wakeup p1"] },
+      "expected": ["p1"]
+    }
+  ]
+}

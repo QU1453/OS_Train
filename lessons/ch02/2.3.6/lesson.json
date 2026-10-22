@@ -1,0 +1,17 @@
+{
+  "id": "2.3.6",
+  "chapter": "ch02",
+  "order": 22,
+  "title": "经典问题：读者-写者问题",
+  "subtitle": "读读共享 · 读写互斥 · readcount 与读者优先",
+  "tags": [
+    "高频",
+    "代码"
+  ],
+  "difficulty": "重点",
+  "minutes": 35,
+  "exam": "读者-写者的三条约束；readcount 的作用及其互斥保护；第一个/最后一个读者对写者信号量的操作；读者优先与写者饥饿",
+  "scenes": [
+    "reader-writer"
+  ]
+}

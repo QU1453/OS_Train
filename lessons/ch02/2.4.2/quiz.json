@@ -1,0 +1,123 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "死锁预防的基本思想是（　）。",
+      "options": [
+        "在资源分配前判断系统是否处于安全状态",
+        "在系统运行中检测是否出现死锁并加以解除",
+        "破坏产生死锁的四个必要条件中的一个或多个",
+        "忽略死锁，认为其不会发生"
+      ],
+      "answer": 2,
+      "explain": "<strong>死锁预防</strong>通过在资源分配前施加限制、<strong>破坏四个必要条件之一（或几个）</strong>来防止死锁。A 是死锁避免（银行家算法），B 是死锁检测与解除，D 是鸵鸟策略。故选 C。",
+      "fig": "dl-pp-idea"
+    },
+    {
+      "id": "q2",
+      "stem": "采用「资源有序分配法」可以破坏死锁的（　）条件。",
+      "options": [
+        "互斥条件",
+        "不可剥夺条件",
+        "请求并保持条件",
+        "循环等待条件"
+      ],
+      "answer": 3,
+      "explain": "资源有序分配法规定进程只能按资源<strong>编号递增的顺序</strong>申请资源，从而不可能形成环路等待，破坏的是<strong>循环等待条件</strong>。注意不要与「一次性申请全部资源破坏请求并保持条件」混淆。",
+      "fig": "dl-pp-order"
+    },
+    {
+      "id": "q3",
+      "stem": "规定进程在运行前<strong>一次性申请全部所需资源</strong>，这破坏了死锁的（　）条件。",
+      "options": [
+        "互斥条件",
+        "不可剥夺条件",
+        "请求并保持条件",
+        "循环等待条件"
+      ],
+      "answer": 2,
+      "explain": "要求进程运行前<strong>一次性申请全部资源</strong>，申请不到就不投入运行，进程在等待新资源时<strong>不持有其他资源</strong>，破坏了「请求并保持（占有并等待）」条件，故选 C。",
+      "fig": "dl-pp-hold"
+    },
+    {
+      "id": "q4",
+      "stem": "在死锁预防中，通常认为<strong>不现实、一般不采用</strong>的方法是破坏（　）条件。",
+      "options": [
+        "互斥条件",
+        "不可剥夺条件",
+        "请求并保持条件",
+        "循环等待条件"
+      ],
+      "answer": 0,
+      "explain": "许多资源受<strong>物理特性</strong>限制必须互斥使用，且为系统安全许多资源本应互斥访问，因此<strong>破坏互斥条件通常不现实</strong>，一般不采用；死锁预防主要从破坏后三个条件入手。故选 A。",
+      "fig": "dl-pp-mutex"
+    },
+    {
+      "id": "q5",
+      "stem": "关于死锁预防的缺点，下列叙述<strong>错误</strong>的是（　）。",
+      "options": [
+        "可能降低资源利用率",
+        "可能导致某些进程饥饿",
+        "能使系统在任何情况下都不发生死锁，且几乎不影响性能",
+        "资源有序分配法会给用户编程带来不便"
+      ],
+      "answer": 2,
+      "explain": "死锁预防虽然能可靠地防止死锁，但所加限制<strong>过严</strong>，会导致<strong>资源利用率低、系统吞吐量下降</strong>，并非「几乎不影响性能」，故 C 错误。A、B、D 均是其真实缺点。",
+      "fig": "dl-pp-cost"
+    },
+    {
+      "id": "q6",
+      "stem": "「当一个已持有若干资源的进程申请新资源不能立即满足时，必须释放它已保持的全部资源，以后再重新申请」，这一做法破坏的是（　）条件。",
+      "options": [
+        "互斥条件",
+        "不可剥夺条件",
+        "请求并保持条件",
+        "循环等待条件"
+      ],
+      "answer": 1,
+      "explain": "该做法相当于<strong>允许进程的资源被剥夺</strong>（不再「一旦占有就不可夺」），破坏了<strong>不可剥夺条件</strong>。它实现复杂、开销大，只适用于状态易保存和恢复的资源。故选 B。",
+      "fig": "dl-pp-deprive"
+    },
+    {
+      "id": "q7",
+      "stem": "下列关于死锁预防与死锁避免的说法，<strong>正确</strong>的是（　）。",
+      "options": [
+        "二者都通过破坏四个必要条件来防止死锁",
+        "死锁预防是静态的、事先施加限制，死锁避免是动态地判断分配后是否安全",
+        "死锁避免比死锁预防更保守、资源利用率更低",
+        "死锁预防需要在每次分配前运行银行家算法"
+      ],
+      "answer": 1,
+      "explain": "<strong>死锁预防</strong>在分配前<strong>静态</strong>施加限制、破坏必要条件；<strong>死锁避免</strong>则在<strong>每次分配时动态判断</strong>系统是否仍处于安全状态（银行家算法）。故 B 正确。A 把二者混淆，C 说反（死锁避免更灵活、利用率更高），D 张冠李戴。",
+      "fig": "dl-pp-pvsa"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "资源有序分配法合规检查",
+      "prompt": "<p>系统把所有资源按类型编号 <code>1, 2, 3, …</code>，规定进程只能<strong>按编号递增的顺序</strong>申请资源。现在给出若干进程的「已持有资源」与「本次申请」，请找出<strong>违反有序分配法</strong>的进程。</p><ul><li><code>rank</code>：资源名列表，<strong>下标 + 1 就是编号</strong>（例如 <code>['printer','scanner','tape']</code> 表示打印机 1 号、扫描仪 2 号、磁带机 3 号）。</li><li><code>held</code>：二维列表，<code>held[i]</code> 是进程 <code>i</code> 已持有的资源名。</li><li><code>request</code>：二维列表，<code>request[i]</code> 是进程 <code>i</code> 本次申请的资源名（可以为空）。</li></ul><p><strong>判定规则</strong>：进程已持资源中的<strong>最大编号</strong>作为基准（空手的进程基准取 <code>0</code>）；只要它申请的某个资源编号<strong>严格小于</strong>该基准，即为违规（编号<strong>相等</strong>是合法的）。</p><p><strong>返回</strong>：所有违规进程的<strong>下标列表</strong>，按<strong>升序</strong>排列；无违规返回空列表。</p>",
+      "hints": [
+        {
+          "text": "先别写循环：建一张 <code>资源名 → 编号</code> 的字典，编号就是 <code>下标 + 1</code>。",
+          "fig": "pv-code-hint"
+        },
+        {
+          "text": "每个进程先求<b>已持资源的最大编号</b>当基准；空手进程要单独照顾，基准取 <code>0</code>，否则 <code>max()</code> 会直接报错。"
+        },
+        {
+          "text": "判据是<b>严格小于</b>：申请同编号资源（<code>==</code>）合法，写成 <code>&lt;=</code> 会把合法情况误判成违规。"
+        },
+        {
+          "text": "收齐下标后<b>排序</b>再返回；判题按列表逐项比对，顺序错了照样算错。"
+        }
+      ],
+      "explain": "<p>核心只有一条判据：<strong>待申请编号 &lt; 已持最大编号 ⇒ 违规</strong>。有序分配法允许进程「按编号往上走」，禁止「握着大号回头要小号」，所以只要盯住每个进程的<strong>已持最高编号</strong>就够了。</p><p>三处最容易失分：① <code>held[i]</code> 为空时用 <code>max(..., default=0)</code>，别让 <code>max([])</code> 抛异常；② 比较必须是 <code>&lt;</code> 而不是 <code>&lt;=</code>；③ 返回的列表要<strong>升序</strong>。</p>",
+      "explain_fig": "pv-code-explain",
+      "c_reference": "/* 资源已换算成编号（1..rank_n）；held/request 存编号，0 表示空 */\nint check(int n, int held[][8], int held_cnt[],\n          int request[][8], int req_cnt[], int out[]) {\n    int bad = 0;\n    for (int i = 0; i < n; i++) {\n        int base = 0;                        /* 空手进程基准取 0 */\n        for (int j = 0; j < held_cnt[i]; j++)\n            if (held[i][j] > base) base = held[i][j];\n        for (int j = 0; j < req_cnt[i]; j++)\n            if (request[i][j] < base) { out[bad++] = i; break; }\n    }\n    return bad;                              /* 天然按下标升序 */\n}\n",
+      "python_reference": "def solve(rank, held, request):\n    no = {name: i + 1 for i, name in enumerate(rank)}\n    bad = []\n    for i, req in enumerate(request):\n        # 已持资源的最大编号，空手时取 0\n        base = max((no[r] for r in held[i]), default=0)\n        # 申请编号严格小于基准 ⇒ 回头申请，违规\n        if any(no[r] < base for r in req):\n            bad.append(i)\n    return sorted(bad)\n",
+      "starter_python": "def solve(rank, held, request):\n    # rank: 资源名列表，下标 + 1 就是编号\n    # held[i] / request[i]: 进程 i 已持有 / 本次申请的资源名\n    # 返回违规进程的下标列表（升序）\n    no = {}\n    for i, name in enumerate(rank):\n        no[name] = i + 1\n\n    bad = []\n    # TODO: 逐个进程求「已持最大编号」基准，再检查申请编号是否回落\n    return bad\n",
+      "judge_problem_id": "ordered-alloc"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+<h2>1. 什么是进程通信</h2>
+
+<p>系统中的多个进程可以并发执行，但它们往往需要协作完成同一项任务：例如两个进程要共享一段中间结果，或者一个进程要把计算结果交给另一个进程。这种<strong>进程之间的信息交换</strong>，就称为<strong>进程通信（Inter-Process Communication, IPC）</strong>。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>进程通信</strong>是指进程之间的信息交换。由于各进程拥有独立的地址空间，一个进程不能直接访问另一个进程的地址空间，因此必须借助操作系统提供的通信机制来交换数据。</p>
+</div>
+
+<p>进程通信是「进程同步」的一种高级形式：进程同步（如 PV 操作）主要解决进程<strong>推进次序</strong>的协调问题，而进程通信则着眼于进程之间<strong>大批量数据的传递</strong>。王道教材把进程通信归纳为三大类：<strong>共享存储（共享内存）、消息传递、管道通信</strong>。</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>通信方式</th><th>核心思想</th><th>是否有中间实体 / 共享空间</th><th>是否需要用户自行互斥同步</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>共享存储</strong></td>
+      <td>划出一块共享空间，双方直接读写</td>
+      <td>有共享存储区</td>
+      <td>需要（对共享区的访问必须互斥）</td>
+    </tr>
+    <tr>
+      <td><strong>消息传递</strong></td>
+      <td>以「消息」为单位交换数据</td>
+      <td>无共享空间（经内核/信箱中转）</td>
+      <td>由系统保证，用户一般无需处理</td>
+    </tr>
+    <tr>
+      <td><strong>管道通信</strong></td>
+      <td>通过一个共享的 pipe 文件（缓冲区）读写</td>
+      <td>有管道缓冲区</td>
+      <td>由系统保证读写同步</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>2. 共享存储（共享内存）</h2>
+
+<p><strong>共享存储</strong>方式的思想是：操作系统在内存中划出一块区域，作为<strong>共享空间</strong>，需要通信的进程把这块共享空间映射到自己的地址空间中，就可以像访问本地内存一样直接读写其中的数据。</p>
+
+<p>按照共享空间的粒度，可进一步分为两种：</p>
+
+<ul>
+  <li><strong>低级通信方式——基于数据结构</strong>：把共享空间组织成某种数据结构（如共享数组、共享队列），进程通过该结构交换数据。这种方式<strong>速度慢、能传递的数据量小、使用受限</strong>。</li>
+  <li><strong>高级通信方式——基于存储区</strong>：在内存中开辟一整块<strong>共享存储区</strong>，进程按地址访问。<strong>速度快、数据量大、使用灵活</strong>，是最常用的共享存储形式。</li>
+</ul>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>共享存储并不是「随便读写」：进程之间存在一块可直接访问的共享空间，但<strong>对该共享空间的访问必须是互斥的</strong>。也就是说，共享存储方式<strong>需要进程自己使用同步互斥工具（如 PV 操作）</strong>来保证不会出现多个进程同时读写、导致数据不一致的问题。这是共享存储与消息传递、管道最大的不同。</p>
+</div>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>共享存储方式的两个前提：① 操作系统提供<strong>共享空间（存储区）</strong>；② 进程对该空间的读写<strong>必须互斥</strong>（否则需要用户引入互斥信号量）。共享存储<strong>不涉及数据的复制</strong>（直接读写），因此是三种方式中<strong>速度最快</strong>的。</p>
+</div>
+
+<h2>3. 消息传递</h2>
+
+<p>如果两个进程之间<strong>不存在共享空间</strong>，就无法使用共享存储方式。此时可采用<strong>消息传递</strong>方式：进程间的数据交换以格式化的<strong>消息（Message）</strong>为单位，消息中既包含数据，也可能包含消息头和类型。</p>
+
+<p>消息传递是最广泛使用的一种进程通信方式，它可分为两种：</p>
+
+<h3>3.1 直接通信方式</h3>
+
+<p>发送进程<strong>直接把消息发送给</strong>目标进程，消息被挂到接收进程的<strong>消息缓冲队列</strong>上；接收进程从自己的消息缓冲队列中取出消息。常用的两条原语是：</p>
+
+<pre class="formula">send(Receiver, message);    // 发送一个消息给 Receiver
+receive(Sender, message);   // 接收来自 Sender 的消息</pre>
+
+<p>直接通信中，通信双方必须<strong>显式地指明对方的名字</strong>（发送方写接收者、接收方写发送者），因此又称「<strong>一对一</strong>」的消息传递。</p>
+
+<h3>3.2 间接通信方式</h3>
+
+<p>发送进程把消息发送给一个<strong>中间实体</strong>，通常称为<strong>信箱（Mailbox）</strong>；接收进程从这个信箱中取走消息。因此间接通信又称<strong>信箱通信</strong>。常用的两条原语是：</p>
+
+<pre class="formula">send(mailbox, message);     // 把消息发送到指定信箱
+receive(mailbox, message);  // 从指定信箱取出消息</pre>
+
+<p>间接通信中，进程之间<strong>不直接指定对方</strong>，而是通过共享一个信箱来交换消息，因此 <strong>send 和 receive 中的进程名可以省略</strong>，一个信箱可以被多个进程共享，灵活性和通用性更强，是更常用的消息传递形式。</p>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：直接通信 vs 间接通信</div>
+  <p>① <strong>直接通信</strong>：消息直接挂到接收进程的<strong>消息缓冲队列</strong>，send/receive 中要写明收发进程；② <strong>间接通信</strong>：消息先发到<strong>信箱</strong>这个中间实体，再由接收进程取走，send/receive 中指明的是信箱而非进程。两者的核心区别在于<strong>是否存在中间实体（信箱）</strong>。</p>
+</div>
+
+<h3>3.3 关于消息缓冲队列的补充</h3>
+
+<p>直接通信中被挂入的「消息缓冲队列」，其本质是接收进程的一个<strong>缓冲区</strong>。发送进程与接收进程围绕这个缓冲区一「送」一「取」，恰好构成一个<strong>生产者—消费者</strong>问题：当缓冲区中没有消息时，接收进程必须等待；当缓冲区已满时，发送进程必须等待。因此消息传递方式虽然由系统负责同步，但其内部机制往往同样需要借助同步互斥手段来保证消息的有序收发。</p>
+
+<p>此外，消息传递方式的一个显著优点是：进程之间<strong>无需共享地址空间</strong>，只要借助操作系统提供的 send / receive 原语即可交换数据，因此它非常适合<strong>分布式系统</strong>中不同机器上进程之间的通信；这是共享存储方式所不具备的。</p>
+
+<p>最后要区分「共享存储」与「消息传递」的根本前提：共享存储<strong>要求通信双方能访问同一块内存</strong>，而消息传递<strong>只要求双方能调用内核提供的通信原语</strong>，对内存布局没有要求。正因如此，在<strong>微内核</strong>结构与网络编程中，消息传递往往是首选的进程通信方式。</p>
+
+<h2>4. 管道通信</h2>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>管道（pipe）</strong>是指用于连接一个<strong>读进程</strong>和一个<strong>写进程</strong>，以实现它们之间通信的一个<strong>共享文件</strong>，又称 <strong>pipe 文件</strong>。从本质上看，管道是内存中一个大小固定的缓冲区。</p>
+</div>
+
+<p>为了协调通信双方的读写，管道机制必须提供三方面的支持：<strong>互斥</strong>（保证读写不同时进行）、<strong>同步</strong>（写满则等待、读空则等待）、<strong>确定对方存在</strong>（确认读写进程是否已就绪）。</p>
+
+<p>管道通信有以下几个鲜明的特点：</p>
+
+<ul>
+  <li><strong>半双工</strong>：某一时刻数据只能<strong>单向</strong>传输。若要实现双向同时通信，必须建立<strong>两个</strong>管道。</li>
+  <li><strong>写满则阻塞写进程</strong>：当管道（缓冲区）被写满时，写进程会被阻塞，等待读进程取走数据后再继续写。</li>
+  <li><strong>读空则阻塞读进程</strong>：当管道为空时，读进程会被阻塞，等待写进程写入数据后再继续读。</li>
+  <li><strong>数据一旦被读出就丢弃</strong>：管道中的数据被读进程读走后即被丢弃，因此<strong>读进程最多只能有一个</strong>（多个读进程会争抢数据导致混乱）。</li>
+</ul>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p>管道通信记「<strong>三特点</strong>」：<strong>半双工</strong>、<strong>写满/读空则阻塞</strong>、<strong>读完即丢</strong>。<br>再补一句：管道是<strong>共享文件（pipe 文件）</strong>，本质是内存缓冲区。</p>
+</div>
+
+<div class="scene" data-scene="proc-ipc"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>5. 本节小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>三大方式</strong>：共享存储、消息传递、管道通信（「<strong>共消管</strong>」）。<br><strong>共享存储</strong>：有共享区，<strong>需互斥</strong>，分低级（数据结构）/ 高级（存储区），速度最快。<br><strong>消息传递</strong>：无共享区，分直接（挂到接收进程缓冲队列）/ 间接（发到信箱），system 保证同步。<br><strong>管道</strong>：共享 pipe 文件，<strong>半双工</strong>，写满阻塞写、读空阻塞读，读出即丢弃，读进程最多一个。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「进程通信的方式有哪些」→ 答<strong>共享存储、消息传递、管道通信</strong>。<br>② 问「哪种通信方式需要进程自己实现互斥」→ 答<strong>共享存储</strong>（消息传递与管道的同步由系统处理）。<br>③ 问「直接通信与间接通信的区别」→ 关键在于是否存在<strong>中间实体（信箱）</strong>；间接通信又称信箱通信。</p>
+  <p>④ 问「管道的特性」→ 半双工、写满/读空则阻塞、数据读出即丢弃、读进程最多一个。<br>⑤ 给若干说法判断对错，常见错误项：把共享存储说成「无需同步」、把管道说成「全双工」、把间接通信的 send 说成「必须写明接收进程名」。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>进程通信是指进程之间的信息交换。常用的进程通信方式有三类：共享存储、消息传递和管道通信。共享存储方式下，进程对共享空间的访问必须是互斥的；消息传递方式以格式化的消息为单位交换数据，分为直接通信方式和间接通信方式；管道通信通过一个共享的 pipe 文件实现读写进程之间的通信。</p>
+</div>
+
+<p>完成下方选择题后，进入下一节 <strong>2.1.5 线程的概念与多线程模型</strong>。</p>

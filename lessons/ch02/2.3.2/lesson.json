@@ -1,0 +1,17 @@
+{
+  "id": "2.3.2",
+  "chapter": "ch02",
+  "order": 18,
+  "title": "实现临界区互斥的基本方法",
+  "subtitle": "软件方法 · 硬件方法 · 四条准则辨析",
+  "tags": [
+    "高频",
+    "代码"
+  ],
+  "difficulty": "提高",
+  "minutes": 32,
+  "exam": "单标志法、双标志先检查/后检查法、Peterson 算法；中断屏蔽、TestAndSet、Swap 指令；各方法是否满足空闲让进/忙则等待/有限等待/让权等待",
+  "scenes": [
+    "mutex-impl"
+  ]
+}

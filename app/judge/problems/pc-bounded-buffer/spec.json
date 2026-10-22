@@ -1,0 +1,24 @@
+{
+  "id": "pc-bounded-buffer",
+  "title": "生产者—消费者问题（有界缓冲区）",
+  "kind": "concurrency",
+  "entry": "run",
+  "config": {
+    "capacity": 4,
+    "n_producers": 2,
+    "n_consumers": 2,
+    "items_per_producer": 12,
+    "expected_total": 24
+  },
+  "runs": 15,
+  "run_timeout_sec": 3.0,
+  "fail_fast": false,
+  "invariants": [
+    "no_error",
+    "no_overflow",
+    "no_underflow",
+    "no_lost_update",
+    "liveness",
+    "no_deadlock"
+  ]
+}

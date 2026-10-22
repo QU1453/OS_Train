@@ -1,0 +1,12 @@
+{
+  "id": "2.3.3",
+  "chapter": "ch02",
+  "order": 19,
+  "title": "信号量机制",
+  "subtitle": "整型信号量 · 记录型信号量 · PV 原语",
+  "tags": ["高频", "动画", "代码"],
+  "difficulty": "提高",
+  "minutes": 30,
+  "exam": "整型信号量与记录型信号量的区别；wait/P 与 signal/V 原语；value 的物理意义；用信号量实现互斥（初值 1）与同步（初值 0）",
+  "scenes": ["semaphore-pv"]
+}

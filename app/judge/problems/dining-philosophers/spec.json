@@ -1,0 +1,21 @@
+{
+  "id": "dining-philosophers",
+  "title": "哲学家进餐问题（避免死锁）",
+  "kind": "concurrency",
+  "entry": "run",
+  "config": {
+    "n_philosophers": 5,
+    "rounds": 3,
+    "exclusive_labels": ["fork0", "fork1", "fork2", "fork3", "fork4"],
+    "conflict_labels": [],
+    "require_regions": ["eat", "fork0", "fork1", "fork2", "fork3", "fork4"]
+  },
+  "runs": 15,
+  "run_timeout_sec": 3.0,
+  "fail_fast": false,
+  "invariants": [
+    "no_error",
+    "no_concurrent",
+    "no_deadlock"
+  ]
+}

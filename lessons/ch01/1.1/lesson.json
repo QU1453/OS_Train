@@ -1,0 +1,12 @@
+{
+  "id": "1.1",
+  "chapter": "ch01",
+  "order": 1,
+  "title": "操作系统的基本概念",
+  "subtitle": "定义 · 四大特征 · 目标与功能",
+  "tags": ["概念", "高频"],
+  "difficulty": "基础",
+  "minutes": 25,
+  "exam": "概念辨析；并发与共享的关系；并发与并行的区别",
+  "scenes": ["os-concept"]
+}

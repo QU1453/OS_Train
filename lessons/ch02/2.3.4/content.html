@@ -1,0 +1,175 @@
+<h2>2.3.4 用信号量实现进程同步与互斥</h2>
+
+<p>掌握了信号量及 P、V 原语之后，本节把二者<strong>组合起来</strong>，解决实际的同步与互斥问题。解决这类问题的核心，在于<strong>先弄清进程/操作之间的关系</strong>，再据此设置信号量。这也是 408 中「用 PV 操作描述前趋关系」「生产者-消费者」等题型的通用解题框架。</p>
+
+<h2>1. 分析同步互斥问题的一般步骤</h2>
+
+<ol>
+  <li><strong>关系分析</strong>：找出题目中各个进程（或操作）之间存在哪些<strong>同步（前趋）关系</strong>和<strong>互斥关系</strong>。同步关系表现为「谁必须在谁之前」，互斥关系表现为「谁和谁不能同时访问同一临界资源」。</li>
+  <li><strong>整理思路</strong>：根据同步、互斥关系，确定需要设置<strong>哪几个信号量</strong>，并直接写出对应的 P、V 操作位置。</li>
+  <li><strong>设置信号量</strong>：<strong>互斥信号量初值为 1</strong>，<strong>同步信号量（用于前趋）初值为 0</strong>。最后检查 P、V 是否配对、顺序是否正确。</li>
+</ol>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>互斥</strong>：mutex 初值 1，同一进程内「进入区 P、退出区 V」。<br>
+  <strong>同步</strong>：信号量初值 0，「先做的 V、后做的 P」，跨进程配对。</p>
+</div>
+
+<h2>2. 用信号量实现互斥（分析要点）</h2>
+
+<p>若多个进程竞争同一临界资源，则设置一个初值为 1 的互斥信号量 <code>mutex</code>，把对临界资源的访问包在 <code>P(mutex)…V(mutex)</code> 之间：</p>
+
+<pre class="formula">semaphore mutex = 1;    // 互斥信号量，初值 1
+
+P1() {
+    ...
+    P(mutex);           // 进入区
+    // 访问临界资源（临界区）
+    V(mutex);           // 退出区
+    ...
+}</pre>
+
+<p>要点：① 不同的临界资源要用<strong>不同的 mutex</strong>；② 同一进程内 P、V 成对；③ 临界区代码尽量短。这些在上节已详尽讨论，此处不再展开。</p>
+
+<h2>3. 用信号量实现同步：前趋图</h2>
+
+<h3>3.1 前趋图与设置方法</h3>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>前趋图（Precedence Graph）</strong>是一个<strong>有向无环图（DAG）</strong>，图中的每个结点表示一个进程、程序段或一条语句，每条有向边表示两结点之间的<strong>前趋关系</strong>：若存在边 <code>Si → Sj</code>，则 <code>Si</code> 必须在 <code>Sj</code> 开始之前完成。</p>
+</div>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：前趋图 → 信号量的映射规则</div>
+  <p>① <strong>每一条前趋边设置一个信号量，初值为 0</strong>；<br>
+  ② 在这条边<strong>起点</strong>的操作完成之后执行 <strong>V</strong>（通知后继可以开始）；<br>
+  ③ 在这条边<strong>终点</strong>的操作开始之前执行 <strong>P</strong>（等待前趋完成）；<br>
+  ④ 若一个操作有<strong>多条入边</strong>，则它开始前要对所有入边对应的信号量都做 P；若有<strong>多条出边</strong>，则它完成后要对所有出边对应的信号量都做 V。</p>
+</div>
+
+<h3>3.2 例：四语句的前趋关系</h3>
+
+<p>设四条语句 <code>S1、S2、S3、S4</code> 满足前趋关系：<code>S1→S2、S1→S3、S2→S4、S3→S4</code>。共有四条边，故设置四个初值为 0 的信号量 <code>a、b、c、d</code>：</p>
+
+<pre class="formula">semaphore a = 0, b = 0, c = 0, d = 0;
+
+S1() { // 出边 a(S1→S2)、b(S1→S3)
+    ...
+    V(a); V(b);          // S1 完成后，通知 S2、S3
+}
+S2() { // 入边 a，出边 c(S2→S4)
+    P(a);                // 等 S1
+    ...
+    V(c);                // 通知 S4
+}
+S3() { // 入边 b，出边 d(S3→S4)
+    P(b);                // 等 S1
+    ...
+    V(d);                // 通知 S4
+}
+S4() { // 入边 c、d
+    P(c); P(d);          // 等 S2 和 S3 都完成
+    ...
+}</pre>
+
+<p>按此规则写出的 P、V 序列，天然保证了「先做的先 V、后做的后 P」，也就保证了各结点严格按照前趋图规定的次序执行。</p>
+
+<h2>4. 单缓冲区的生产者-消费者问题</h2>
+
+<p>这是「同步 + 互斥」综合应用的经典模型，也是后续 2.3.5 节的基础。</p>
+
+<h3>4.1 问题描述与关系分析</h3>
+
+<p>设有一个大小为 <strong>1</strong> 的缓冲区，生产者进程不断把产品放入缓冲区，消费者进程不断从缓冲区取出产品。分析两类关系：</p>
+
+<ul>
+  <li><strong>同步关系</strong>（前趋）：生产者放入产品后，消费者才能取（先生产后消费）；消费者取走产品后，生产者才能再放（先消费后生产）。</li>
+  <li><strong>互斥关系</strong>：缓冲区是<strong>临界资源</strong>，同一时刻只能有一个进程对其读写。</li>
+</ul>
+
+<p>据此设置三个信号量：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>信号量</th><th>含义</th><th>初值</th><th>类型</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>empty</code></td><td>空闲缓冲区的数量</td><td>1</td><td>同步（资源信号量）</td></tr>
+    <tr><td><code>full</code></td><td>已放入产品的数量</td><td>0</td><td>同步（资源信号量）</td></tr>
+    <tr><td><code>mutex</code></td><td>缓冲区的互斥访问</td><td>1</td><td>互斥</td></tr>
+  </tbody>
+</table>
+
+<h3>4.2 PV 操作描述</h3>
+
+<pre class="formula">semaphore empty = 1;    // 空闲缓冲区数（初值 = 缓冲区容量）
+semaphore full  = 0;    // 产品数
+semaphore mutex = 1;    // 缓冲区互斥
+
+producer() {
+    while (true) {
+        produce an item;           // 生产一个产品
+        P(empty);                  // ① 申请一个空槽（同步：缓冲满则等待）
+        P(mutex);                  // ② 申请缓冲区的互斥访问
+        put item into buffer;      // ③ 临界区：放入产品
+        V(mutex);                  // ④ 释放缓冲区
+        V(full);                   // ⑤ 通知消费者：产品数 +1
+    }
+}
+
+consumer() {
+    while (true) {
+        P(full);                   // ① 申请一个产品（同步：缓冲空则等待）
+        P(mutex);                  // ② 申请缓冲区的互斥访问
+        take item from buffer;     // ③ 临界区：取走产品
+        V(mutex);                  // ④ 释放缓冲区
+        V(empty);                  // ⑤ 通知生产者：空槽 +1
+        consume the item;          // 消费产品
+    }
+}</pre>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：P 操作的顺序——先同步，后互斥</div>
+  <p>对<strong>资源信号量（empty/full）</strong>的 P 操作<strong>必须写在</strong>对<strong>互斥信号量 mutex</strong> 的 P 操作<strong>之前</strong>。即「先申请资源、再申请临界区锁」。V 操作的先后顺序则没有严格要求。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点：交换 P(empty) 与 P(mutex) 会死锁</div>
+  <p>若生产者写成「先 <code>P(mutex)</code> 再 <code>P(empty)</code>」：当缓冲区已满（<code>empty = 0</code>）时，生产者先拿到了 <code>mutex</code>（锁住了缓冲区），随后在 <code>P(empty)</code> 上<strong>阻塞</strong>；此时消费者想取产品，必须先 <code>P(full)</code> 成功、再 <code>P(mutex)</code>，但 <code>mutex</code> 已被生产者占用，消费者同样阻塞——<strong>生产者等空槽、消费者等锁，互相等待，形成死锁</strong>。可见同步信号量的 P 操作在先，是为了避免「持锁等待」。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点：缓冲区大小与初值</div>
+  <p><code>empty</code> 的初值等于<strong>缓冲区容量</strong>（本题为 1）；<code>full</code> 的初值为 <strong>0</strong>；<code>mutex</code> 初值为 <strong>1</strong>。即便有<strong>多个</strong>生产者、多个消费者，<code>mutex</code> 仍为 1（缓冲区整体作为同一个临界资源）。不要因为「进程多」而把 mutex 初值调大。</p>
+</div>
+
+<div class="scene" data-scene="sem-sync"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>5. 本节小结与真题问法</h2>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 给出前趋图，要求写出各进程的 P、V 操作 → 按「每条边一个信号量、初值 0；起点 V、终点 P」直接套用。<br>
+  ② 生产者-消费者问题中，问「哪个信号量初值为多少」→ empty=容量、full=0、mutex=1。<br>
+  ③ 问「把 P(empty) 与 P(mutex) 交换顺序会怎样」→ 可能引起<strong>死锁</strong>（持锁等待）。<br>
+  ④ 问「V 操作顺序能否交换」→ 一般<strong>可以</strong>交换，但 P 操作顺序不能随意交换。<br>
+  ⑤ 综合题要求「用信号量描述某场景」→ 先做关系分析，再分别处理同步（初值 0）与互斥（初值 1）。</p>
+</div>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>三步走</strong>：关系分析 → 确定信号量 → 写 P、V。<br>
+  <strong>初值</strong>：互斥为 1，同步为 0。<br>
+  <strong>顺序</strong>：P 先同步后互斥，V 顺序较随意。<br>
+  <strong>前趋图</strong>：边即信号量，初值为 0，起 V 终 P。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>用信号量实现进程同步：若要求某操作在前，另一操作在后，则前者执行后执行 V 操作，后者执行前执行 P 操作，同步信号量初值为 0。生产者-消费者问题中，生产者申请空缓冲区（P(empty)）必须在申请缓冲区互斥信号量（P(mutex)）之前，否则可能造成死锁。</p>
+</div>
+
+<p>下一节将以本节的生产者-消费者模型为骨架，讨论<strong>容量为 n 的多缓冲区</strong>生产者-消费者问题，以及读者-写者、哲学家进餐等经典问题。</p>

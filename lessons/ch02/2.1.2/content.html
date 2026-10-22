@@ -1,0 +1,131 @@
+<h2>1. 为什么要给进程划分状态</h2>
+
+<p>在多道程序系统中，内存里可以同时驻留多个进程，但<strong>处理机（CPU）在任何时刻最多只能运行一个进程</strong>。于是进程之间必然出现「有人正在用 CPU、有人在排队等 CPU、有人在等 I/O 完成」的差别。为了刻画这种差别、便于操作系统<strong>管理、调度</strong>这些进程，操作系统为进程定义了若干<strong>状态</strong>，并用 <strong>PCB 中的状态字段</strong>记录每个进程当前处于何种状态。</p>
+
+<p>进程状态反映了进程对 <strong>CPU、内存、I/O 等资源</strong>的占有情况，也是操作系统决定「下一步该把 CPU 交给谁」的直接依据。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p>进程状态是进程在其生命期内所处的一种「处境」，它描述了进程<strong>当前是否拥有处理机、是否在等待某事件</strong>。最核心的是三种基本状态：<strong>运行态、就绪态、阻塞态</strong>。</p>
+</div>
+
+<h2>2. 三种基本状态</h2>
+
+<p>王道教材把进程状态抽象为三种基本状态，它们刻画了进程与处理机、与事件之间的最基本关系：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>状态</th><th>含义</th><th>是否占有 CPU</th><th>能否被调度</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>运行态</strong> Running</td>
+      <td>进程<strong>正在处理机上运行</strong>，占有了 CPU</td>
+      <td>是（单 CPU 下同一时刻至多一个）</td>
+      <td>已在运行</td>
+    </tr>
+    <tr>
+      <td><strong>就绪态</strong> Ready</td>
+      <td>进程<strong>已具备运行条件</strong>（万事俱备），只差 CPU，正在等待被调度</td>
+      <td>否</td>
+      <td>是（早就在等 CPU）</td>
+    </tr>
+    <tr>
+      <td><strong>阻塞态</strong> Blocked / Waiting</td>
+      <td>进程因等待<strong>某事件</strong>（I/O 完成、申请资源、等待信号等）而<strong>暂停运行</strong>，即便给它 CPU 也无法继续</td>
+      <td>否</td>
+      <td>否（条件不满足）</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>① 就绪态与阻塞态的<strong>根本区别</strong>：就绪态「<strong>只差 CPU</strong>」，阻塞态「<strong>在等 CPU 以外的事件</strong>」。<br>② 阻塞态<strong>即使获得 CPU 也不能运行</strong>，因为导致它阻塞的事件还没发生；<br>③ 单处理机系统中，运行态进程同一时刻<strong>至多一个</strong>；就绪态、阻塞态都可以有多个。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>「阻塞态→就绪态」是<strong>被动的、由其它进程或中断唤醒</strong>的，例如 I/O 完成后由中断处理程序把它变为就绪；而「就绪态→运行态」是<strong>主动选择</strong>的，由调度程序分配 CPU。不要把二者方向弄反，也不要说「阻塞态经调度变为运行态」。</p>
+</div>
+
+<h2>3. 另外两种状态：创建态与终止态</h2>
+
+<p>在实际系统中，一个进程从「被创建」到「真正可以被调度」之间，还需要分配 PCB、分配内存、装入程序等步骤；在「结束」时也需要释放资源、回收 PCB。因此教材在三种基本状态之外，又增加了<strong>创建态</strong>与<strong>终止态</strong>，合称五种状态。</p>
+
+<ul>
+  <li><strong>创建态（New）</strong>：进程正在被创建，操作系统为其分配 PCB、申请资源、装入程序，<strong>尚未进入就绪队列</strong>。创建工作完成后转为就绪态。</li>
+  <li><strong>终止态（Exit）</strong>：进程正在从系统中消失，操作系统回收其资源、撤销 PCB。此时进程已不再被调度，只是等待操作系统做「善后」。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>五种状态为：<strong>创建态、就绪态、运行态、阻塞态、终止态</strong>。其中<strong>创建态和终止态是瞬态</strong>，通常不被调度；能被调度的是<strong>就绪态</strong>。<br>另外要记住：<strong>终止态不能回到其它任何状态</strong>，它是进程生命的终点。</p>
+</div>
+
+<h2>4. 状态转换图（重点，高频）</h2>
+
+<p>进程在生命期内会因各种<strong>事件</strong>在不同状态之间迁移。下图给出五种状态之间的合法转换（箭头方向即转换方向，箭头旁文字为触发事件）：</p>
+
+<div class="scene" data-scene="proc-states"></div>
+
+<table class="tbl">
+  <thead>
+    <tr><th>转换</th><th>触发事件</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>创建态 → 就绪态</td><td><strong>admit（许可）</strong></td><td>资源分配完成，加入就绪队列</td></tr>
+    <tr><td>就绪态 → 运行态</td><td><strong>dispatch（调度）</strong></td><td>被进程调度程序选中，分配 CPU</td></tr>
+    <tr><td>运行态 → 就绪态</td><td><strong>timeout（时间片用完）</strong></td><td>时间片到或被更高优先级进程抢占</td></tr>
+    <tr><td>运行态 → 阻塞态</td><td><strong>wait（请求 I/O 或资源）</strong></td><td>进程<strong>主动</strong>请求某事件而暂停</td></tr>
+    <tr><td>阻塞态 → 就绪态</td><td><strong>wakeup（事件完成）</strong></td><td>等待的事件发生，被唤醒（如 I/O 中断处理程序）</td></tr>
+    <tr><td>运行态 → 终止态</td><td><strong>exit（正常结束或异常终止）</strong></td><td>进程运行完毕或被撤销</td></tr>
+    <tr><td>创建态 → 终止态</td><td>创建失败</td><td>资源不足导致创建未完成即被撤销（少见）</td></tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：三条「不可能」的转换</div>
+  <p>① <strong>阻塞态 → 运行态</strong>：不可能。阻塞事件完成后只能先回到<strong>就绪态</strong>，再经调度才可能运行。<br>② <strong>就绪态 → 阻塞态</strong>：不可能。就绪态还没拿到 CPU，谈不上「因请求事件而暂停」，只有运行态才可能主动阻塞。<br>③ <strong>终止态 → 任何状态</strong>：不可能，进程已消亡。</p>
+</div>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p>「<strong>就绪只差 CPU，阻塞在等事件</strong>」；转换记「<strong>运行可三走（就绪/阻塞/终止），阻塞只回就绪，就绪只去运行</strong>」。凡是「阻塞直接运行」「就绪直接阻塞」「终止还能复活」的说法，一律错误。</p>
+</div>
+
+<h2>5. 结合事件的综合理解</h2>
+
+<p>把状态转换与操作系统事件对应起来，是解答综合题的关键。常见的对应关系：</p>
+
+<ul>
+  <li>进程<strong>时间片用完</strong>：运行态 → 就绪态（同类就绪进程仍在就绪队列中等待）；</li>
+  <li>进程<strong>请求 I/O / 申请打印机等资源</strong>：运行态 → 阻塞态；</li>
+  <li><strong>I/O 完成、资源被释放</strong>：阻塞态 → 就绪态（由中断处理或释放资源的进程唤醒）；</li>
+  <li><strong>进程被调度程序选中</strong>：就绪态 → 运行态；</li>
+  <li><strong>进程正常结束或被强制杀死</strong>：运行态 → 终止态。</li>
+</ul>
+
+<div class="blk warn">
+  <div class="blk__label">易错点：运行态是「唯一主动」的状态</div>
+  <p>只有<strong>运行态</strong>进程才能<strong>主动</strong>发起「请求事件 → 阻塞」。就绪态和阻塞态都处于「被动等待」：就绪态等的是 CPU，阻塞态等的是事件。因此「就绪态进程因等待 I/O 而进入阻塞态」「阻塞态进程被调度后进入运行态」都是典型错误选项。</p>
+</div>
+
+<h2>6. 本节小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>三基本</strong>：运行、就绪、阻塞。<br><strong>共五种</strong>：再加创建、终止。<br><strong>核心判据</strong>：就绪只差 CPU，阻塞在等事件。<br><strong>三不能</strong>：阻塞不能直接运行、就绪不能直接阻塞、终止不能复活。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 给出若干状态转换，问「哪一个是<strong>不可能</strong>发生的」→ 重点排查「阻塞→运行」「就绪→阻塞」「终止→就绪」。<br>② 给一个具体情景（如「某进程向磁盘发出读请求后」），问它从什么状态变为什么状态 → 运行态 → 阻塞态。<br>③ 问「进程处于阻塞态时，即使获得 CPU 能否运行」→ 不能，因为等待的事件未发生。<br>④ 问「就绪队列中有多个进程意味着什么」→ 它们都已具备运行条件，只差 CPU。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>进程的三种基本状态是运行态、就绪态和阻塞态；此外还有创建态和终止态，共五种状态。进程在运行态可因时间片用完而转为就绪态，可因请求 I/O 或申请资源而转为阻塞态，可因运行结束而转为终止态；阻塞态在事件发生后转为就绪态；就绪态被调度后转为运行态。阻塞态不能直接转为运行态，就绪态不能直接转为阻塞态。</p>
+</div>
+
+<p>完成下方选择题与代码大题后，进入下一节 <strong>2.1.3 进程控制</strong>。</p>

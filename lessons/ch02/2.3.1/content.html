@@ -1,0 +1,137 @@
+<h2>2.3.1 同步与互斥的基本概念</h2>
+
+<p>进程具有<strong>并发</strong>和<strong>异步</strong>两个重要特征。当多个进程并发执行时，它们可能共享某些资源（变量、缓冲区、打印机等）。如果不加约束，多个进程对共享资源的交叉访问就会产生错误、结果不可再现。因此操作系统必须提供一种机制，对并发进程的<strong>执行次序</strong>和<strong>资源访问</strong>加以协调，这就是本节要讲的<strong>进程同步</strong>与<strong>进程互斥</strong>。</p>
+
+<h2>1. 进程同步（直接制约关系）</h2>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>进程同步（Synchronization）</strong>又称<strong>直接制约关系</strong>，是指为完成某种任务而建立的两个或多个进程，因需要在某些位置上<strong>协调它们的工作次序</strong>而产生的制约关系。进程间的直接制约关系源于它们之间的<strong>相互合作</strong>。</p>
+</div>
+
+<p>通俗地说，进程同步要解决的是「<strong>先后顺序</strong>」问题：某些操作必须在另一些操作之前（或之后）发生。例如：</p>
+
+<ul>
+  <li>「计算进程」与「打印进程」：计算进程把结果放入缓冲区，打印进程才能从缓冲区取出打印——先「写」后「读」。</li>
+  <li>生产者和消费者之间：生产者先把产品放入缓冲区，消费者才能取走——「先生产、后消费」。</li>
+</ul>
+
+<p>同步是进程之间<strong>主动配合</strong>的结果，若没有这种次序协调，合作就无法正确完成。</p>
+
+<h2>2. 进程互斥（间接制约关系）</h2>
+
+<h3>2.1 临界资源</h3>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>临界资源（Critical Resource）</strong>是指在一段时间内<strong>只允许一个进程使用</strong>的资源。例如打印机、绘图仪、摄像头等设备，以及许多共享变量、共享数据、内存缓冲区等。<strong>对临界资源的访问必须互斥地进行。</strong></p>
+</div>
+
+<h3>2.2 进程互斥</h3>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>进程互斥（Mutual Exclusion）</strong>又称<strong>间接制约关系</strong>，是指当一个进程正在访问某临界资源时，另一个想要访问该临界资源的进程必须等待；只有当前进程访问结束并<strong>释放</strong>该资源后，另一进程才能访问。</p>
+</div>
+
+<p>互斥与同步的区别：同步是「协调先后次序」，源于进程间的<strong>合作</strong>；互斥是「竞争使用独占资源」，源于进程对临界资源的<strong>争夺</strong>。因此同步是直接制约，互斥是间接制约。</p>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>「互斥」并不是让进程「完全串行」，而是<strong>在同一临界资源上串行</strong>：不同进程访问<strong>不同</strong>临界资源时互不影响；只有访问<strong>同一</strong>临界资源时才需要互斥。不要把互斥范围随意放大。</p>
+</div>
+
+<h2>3. 临界区的四个组成部分</h2>
+
+<p>对临界资源的访问，在逻辑上可以分为四个部分（以访问临界资源的进程为例）：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>部分</th><th>作用</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>进入区</strong></td>
+      <td>检查是否可进入临界区</td>
+      <td>若可进入，则设置「正在访问」标志（上锁），阻止其他进程同时进入</td>
+    </tr>
+    <tr>
+      <td><strong>临界区</strong></td>
+      <td>访问临界资源的那段代码</td>
+      <td>又称临界段，是真正读写共享资源的代码</td>
+    </tr>
+    <tr>
+      <td><strong>退出区</strong></td>
+      <td>解除「正在访问」标志</td>
+      <td>相当于「解锁」，让出对该临界资源的占用</td>
+    </tr>
+    <tr>
+      <td><strong>剩余区</strong></td>
+      <td>做其他处理</td>
+      <td>与临界资源访问无关的代码</td>
+    </tr>
+  </tbody>
+</table>
+
+<pre class="formula">while (true) {
+    // 进入区：上锁 / 检查
+    entry_section();
+
+    // 临界区：访问临界资源
+    critical_section();
+
+    // 退出区：解锁
+    exit_section();
+
+    // 剩余区
+    remainder_section();
+}</pre>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p><strong>进入区</strong>和<strong>退出区</strong>是负责<strong>实现互斥</strong>的代码；<strong>临界区</strong>是<strong>访问临界资源</strong>的代码段。也就是说，真正需要「一次只允许一个进程执行」的是临界区代码，而进入区/退出区是为保证这一点服务的。</p>
+</div>
+
+<h2>4. 同步机制应遵循的四条准则</h2>
+
+<p>无论是软件方法还是硬件方法，凡是用来解决临界区互斥的同步机制，都应当遵循以下四条准则：</p>
+
+<ol>
+  <li><strong>空闲让进。</strong>临界区空闲时，应允许一个请求进入临界区的进程<strong>立即进入</strong>，以提高资源利用率。</li>
+  <li><strong>忙则等待。</strong>当已有进程进入临界区时，其他试图进入临界区的进程必须<strong>等待</strong>，以保证互斥。</li>
+  <li><strong>有限等待。</strong>对请求访问的进程，应保证它能在<strong>有限时间内</strong>进入临界区，即不会「无限期等待」（避免饥饿）。</li>
+  <li><strong>让权等待。</strong>当进程不能进入临界区时，应<strong>立即释放处理机</strong>，防止进程陷入「忙等待（busy waiting）」。</li>
+</ol>
+
+<div class="blk warn">
+  <div class="blk__label">易错点 · 让权等待不是必须的</div>
+  <p>前三条「空闲让进、忙则等待、有限等待」是<strong>必须满足</strong>的基本准则；而<strong>让权等待</strong>往往难以实现，许多经典互斥方法（如软件方法中的单标志法、双标志先检查法等）并<strong>不满足</strong>让权等待，会出现忙等。考试中要能区分「哪些方法满足让权等待、哪些不满足」。</p>
+</div>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>同步</strong>：直接制约，讲「<strong>次序</strong>」，源于合作。</p>
+  <p><strong>互斥</strong>：间接制约，讲「<strong>独占</strong>」，源于竞争。</p>
+  <p><strong>临界区四部分</strong>：进入区、临界区、退出区、剩余区。</p>
+  <p><strong>四条准则</strong>：空闲让进、忙则等待、有限等待、让权等待（口诀「<strong>空忙限让</strong>」）。</p>
+</div>
+
+<div class="scene" data-scene="crit-section"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>5. 本节小结与真题问法</h2>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「同步与互斥的制约关系」→ 同步是<strong>直接</strong>制约、互斥是<strong>间接</strong>制约。</p>
+  <p>② 问「临界区是指」→ <strong>访问临界资源的那段代码</strong>（不是「临界资源本身」，也不是「进入区」）。</p>
+  <p>③ 问「同步机制应遵循的准则」→ 空闲让进、忙则等待、有限等待、让权等待；并要知道哪一条往往得不到满足（让权等待）。</p>
+  <p>④ 给出设备/变量判断是否为临界资源 → 一段时间内只允许一个进程使用的即为<strong>临界资源</strong>（如打印机、共享变量、缓冲区）。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>临界资源是指一个时间段内只允许一个进程使用的资源，各进程之间采取互斥方式，实现对临界资源的共享。同步机制应遵循的准则：空闲让进、忙则等待、有限等待、让权等待。</p>
+</div>
+
+<p>完成下方选择题后，进入下一节 <strong>2.3.2 实现临界区互斥的基本方法</strong>。</p>

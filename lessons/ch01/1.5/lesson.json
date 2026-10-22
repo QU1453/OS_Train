@@ -1,0 +1,16 @@
+{
+  "id": "1.5",
+  "chapter": "ch01",
+  "order": 5,
+  "title": "操作系统引导",
+  "subtitle": "BIOS/UEFI · MBR · 活动分区 · 引导加载程序",
+  "tags": [
+    "概念"
+  ],
+  "difficulty": "基础",
+  "minutes": 30,
+  "exam": "引导过程的先后顺序；主引导记录（MBR）的组成",
+  "scenes": [
+    "os-boot"
+  ]
+}

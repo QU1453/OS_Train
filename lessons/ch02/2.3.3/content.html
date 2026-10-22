@@ -1,0 +1,172 @@
+<h2>2.3.3 信号量机制</h2>
+
+<p>前述的软件方法与硬件方法，要么实现复杂、容易出错，要么存在「忙等待」而不满足让权等待。1965 年荷兰学者 <strong>Dijkstra</strong> 提出了一种功能更强、使用更方便的进程同步工具——<strong>信号量（Semaphore）机制</strong>。它既能用于解决<strong>互斥</strong>问题，又能用于解决<strong>同步</strong>问题，是操作系统中最重要的同步工具，也是 408 命题的绝对重点。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>信号量</strong>是一个用来表示系统中<strong>某种资源数量</strong>的变量。进程通过两个标准的<strong>原语</strong>来访问信号量：<strong>P 操作（wait）</strong>用于申请一个资源，<strong>V 操作（signal）</strong>用于释放一个资源。所谓原语，就是执行过程<strong>不可被中断</strong>的操作。</p>
+</div>
+
+<div class="blk memo">
+  <div class="blk__label">名称说明</div>
+  <p>P、V 来自荷兰语 <em>passeren</em>（通过）与 <em>vrijgeven</em>（释放）。wait / signal、down / up 是同一对操作的其它叫法。408 中常把「P 操作」写成 <code>wait(S)</code>，「V 操作」写成 <code>signal(S)</code>。</p>
+</div>
+
+<h2>1. 整型信号量</h2>
+
+<p>最朴素的信号量就是一个<strong>整型变量</strong> <code>S</code>，只能通过原子操作 <code>wait</code> 与 <code>signal</code> 来访问，且这两个操作<strong>不可中断</strong>：</p>
+
+<pre class="formula">int S = 1;              // 初始化信号量
+
+void wait(S) {          // P 操作：申请资源
+    while (S <= 0);     // 若没有资源，则循环等待（忙等）
+    S = S - 1;          // 有资源则占用一个
+}
+
+void signal(S) {        // V 操作：释放资源
+    S = S + 1;          // 归还一个资源
+}</pre>
+
+<div class="blk warn">
+  <div class="blk__label">易错点：整型信号量不满足「让权等待」</div>
+  <p>整型信号量在资源不足时，进程会停留在 <code>while (S &lt;= 0);</code> 上<strong>空转（忙等）</strong>，并不会让出处理机，因此<strong>违背让权等待</strong>。此外它把「未占有进程」与「资源数量」混为一谈，无法记录到底有多少个进程在等待、是哪些进程在等待。</p>
+</div>
+
+<h2>2. 记录型信号量</h2>
+
+<p>为解决忙等问题，引入<strong>记录型信号量</strong>。它用一个数据结构来记录「剩余资源数」和「等待该资源的进程队列」：</p>
+
+<pre class="formula">typedef struct {
+    int value;              // 剩余资源数
+    struct process *L;      // 等待队列（阻塞在该信号量上的进程）
+} semaphore;
+
+void wait(semaphore *S) {   // P 操作
+    S-&gt;value--;
+    if (S-&gt;value &lt; 0) {     // 说明已无可用资源
+        block(S-&gt;L);        // 自我阻塞，挂到等待队列（让出处理机）
+    }
+}
+
+void signal(semaphore *S) { // V 操作
+    S-&gt;value++;
+    if (S-&gt;value &lt;= 0) {    // 说明仍有进程在等待
+        wakeup(S-&gt;L);       // 唤醒等待队列中的第一个进程
+    }
+}</pre>
+
+<div class="scene" data-scene="semaphore-pv"></div>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：value 的物理意义</div>
+  <p>对记录型信号量：<br>
+  ① 当 <code>value &gt; 0</code> 时，<code>value</code> 表示<strong>当前还可用的资源数量</strong>；<br>
+  ② 当 <code>value &lt; 0</code> 时，<code>value</code> 表示<strong>等待队列中被阻塞的进程数量</strong>（此时值为 <code>-n</code> 表示有 n 个进程在等待）；<br>
+  ③ <code>value</code> 的<strong>初值</strong>表示系统中该资源的初始数量。</p>
+</div>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：为什么记录型信号量满足让权等待</div>
+  <p>P 操作在资源不足时调用 <code>block</code> 原语，使进程<strong>主动阻塞并进入等待队列</strong>，从而让出处理机；V 操作释放资源后用 <code>wakeup</code> 唤醒等待进程，使其从阻塞态变为就绪态。因此<strong>记录型信号量满足让权等待</strong>，不再忙等。判断 P/V 后是否需要 block/wakeup，关键看判断条件的<strong>大小关系与等号</strong>：wait 用 <code>&lt; 0</code> 判断，signal 用 <code>&lt;= 0</code> 判断。</p>
+</div>
+
+<h2>3. 用信号量实现进程互斥</h2>
+
+<p>把信号量初值设为 <strong>1</strong>（表示只有一个临界资源），即可实现临界区的互斥访问：</p>
+
+<pre class="formula">semaphore mutex = 1;        // 互斥信号量，初值 1
+
+// 进程 P1
+while (true) {
+    P(mutex);               // 进入区：申请进入临界区
+    critical section;       // 临界区：访问临界资源
+    V(mutex);               // 退出区：释放临界区
+    remainder section;      // 剩余区
+}
+
+// 进程 P2
+while (true) {
+    P(mutex);
+    critical section;
+    V(mutex);
+    remainder section;
+}</pre>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：互斥使用的三个要点</div>
+  <p>① <strong>初值为 1</strong>：一次只允许一个进程进入；<br>
+  ② <strong>P、V 必须成对出现</strong>：进入区 P，退出区 V；若遗漏 V（只 P 不 V）会导致其它进程永远阻塞；若遗漏 P（只 V 不 P）则互斥失效；<br>
+  ③ <strong>P、V 是在同一个进程内成对使用的</strong>，且 P(mutex) 与 V(mutex) 之间的临界区代码要尽量短。多个不同的临界资源要用<strong>不同的 mutex 信号量</strong>分别保护。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点：互斥中的 P、V 不能互换位置</div>
+  <p>若把同一进程内的 <code>P(mutex)</code> 与 <code>V(mutex)</code> 写成「先 V 后 P」或顺序颠倒，会破坏互斥语义（先释放再申请毫无意义）。对于单纯的互斥（只有一个 mutex），<strong>V 操作的位置无所谓对错（只要在临界区之后即可），但 P 必须在临界区之前</strong>；而涉及同步时 P/V 的顺序则十分关键，详见下一节。</p>
+</div>
+
+<h2>4. 用信号量实现进程同步</h2>
+
+<p><strong>同步</strong>解决的是「先后次序」问题。若要求操作 A 必须在操作 B 之前完成（前趋关系 A→B），可设置一个初值为 <strong>0</strong> 的信号量，让 A 结束后执行 V，B 开始前执行 P：</p>
+
+<pre class="formula">semaphore S = 0;        // 同步信号量，初值 0
+
+// 进程 A：先执行
+A();
+V(S);                   // A 完成后通知 B：可以开始了
+
+// 进程 B：后执行
+P(S);                   // 若 A 未完成则等待
+B();</pre>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：同步信号量初值为 0</div>
+  <p>同步信号量初值为 <strong>0</strong>，保证「后执行」的进程在「先执行」的进程发出 V 之前，执行 P 时一定会被阻塞。这种「一个进程 V、另一个进程 P」的配对，与互斥中「同一进程内自 P 自 V」形成鲜明对比，是区分同步与互斥的关键。</p>
+</div>
+
+<table class="tbl">
+  <thead>
+    <tr><th>对比项</th><th>互斥信号量</th><th>同步信号量</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>要解决的关系</td><td>竞争同一临界资源（间接制约）</td><td>协调先后次序（直接制约）</td></tr>
+    <tr><td>初值</td><td><strong>1</strong></td><td><strong>0</strong></td></tr>
+    <tr><td>P、V 所在进程</td><td>同一个进程内成对使用</td><td>P、V 分别位于两个进程中</td></tr>
+    <tr><td>是否一定成对</td><td>同一进程内 P、V 成对</td><td>跨进程配对（一方 V，另一方 P）</td></tr>
+  </tbody>
+</table>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀：前趋图 → 信号量</div>
+  <p>把前趋关系画成<strong>前趋图</strong>：<strong>每一条边设置一个信号量，初值为 0</strong>；边的<strong>起点</strong>操作完成后做 <strong>V</strong>，边的<strong>终点</strong>操作开始前做 <strong>P</strong>。这样「先做 V 后做 P」的配对天然保证了先后次序。下一节的综合应用将反复用到这一套路。</p>
+</div>
+
+<h2>5. AND 型信号量与信号量集（拓展）</h2>
+
+<p>当一次需要申请<strong>多个</strong>资源时，逐个别 P 可能导致死锁，为此引入两种扩展：</p>
+
+<ul>
+  <li><strong>AND 型信号量</strong>：把多个 P 操作合并为 <code>Swait(S1, S2, …, Sn)</code>，要么一次性分配所有资源，要么一个都不分配，从而避免「各占一部分、互相等待」的死锁。对应的释放为 <code>Ssignal(S1, …, Sn)</code>。</li>
+  <li><strong>信号量集</strong>：进一步允许一次申请<strong>多个同类资源</strong>，形如 <code>Swait(S1, t1, …)</code>，其中 <code>ti</code> 为需求数量，当且仅当 <code>Si ≥ ti</code> 时才分配。</li>
+</ul>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀：AND 型「全拿或全不拿」</div>
+  <p>AND 型信号量的精髓是「<strong>要么都分配，要么都不分配</strong>」，用它可以把「分段申请」变成「一次性申请」，从源头消除死锁。</p>
+</div>
+
+<h2>6. 本节小结与真题问法</h2>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「记录型信号量中 value 为负时的含义」→ 表示<strong>等待队列中阻塞进程的数目</strong>（为其绝对值）。<br>
+  ② 问「哪种信号量满足让权等待」→ <strong>记录型信号量</strong>（含 block/wakeup）；整型信号量不满足。<br>
+  ③ 问「互斥信号量与同步信号量的初值」→ 互斥为 <strong>1</strong>，同步为 <strong>0</strong>。<br>
+  ④ 给定 P/V 序列判断是否会死锁或破坏互斥 → 抓住「互斥看初值 1、同步看初值 0、P/V 配对」三要素分析。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>信号量机制是一种卓有成效的进程同步工具。信号量只能被 wait(S) 和 signal(S) 两个原语访问。记录型信号量在资源不足时会让进程阻塞，从而满足让权等待；用信号量实现互斥时，mutex 的初值为 1，P、V 必须在同一个进程内成对出现；实现同步时，信号量初值为 0，P、V 分别位于两个进程中。</p>
+</div>
+
+<p>掌握了信号量的定义与 P、V 原语，下一步就是把它们<strong>组合起来</strong>解决实际的同步与互斥问题——这正是下一节 <strong>2.3.4 用信号量实现进程同步与互斥</strong>要讨论的内容。</p>

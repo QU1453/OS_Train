@@ -1,0 +1,125 @@
+<h2>1. 操作系统是什么</h2>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>操作系统（Operating System, OS）</strong>是指控制和管理整个计算机系统的硬件与软件资源，合理地组织、调度计算机的工作与资源的分配，进而为用户和其他软件提供方便接口与环境的<strong>程序集合</strong>。它是计算机系统中最基本的<strong>系统软件</strong>。</p>
+</div>
+
+<p>把这个定义拆成三层来记，考试就好答了：</p>
+
+<ul>
+  <li><strong>管什么</strong>：管理硬件资源 + 软件资源（不是管「人」，也不只是管硬件）。</li>
+  <li><strong>怎么管</strong>：合理地组织、调度、分配资源（这是 OS 的核心动作）。</li>
+  <li><strong>管给谁用</strong>：为用户和其他软件提供<strong>方便接口与环境</strong>。</li>
+</ul>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>OS 是<strong>系统软件</strong>，不是应用软件，也不是「通用软件」。没有任何软件支持的计算机称为<strong>裸机</strong>；覆盖了软件层的机器称为<strong>扩充机器（虚拟机）</strong>。</p>
+</div>
+
+<div class="scene" data-scene="os-concept"></div>
+<p class="scene-tip">拖动可旋转视角；点上方按钮切换「扩充机器／裸机／四大管理／系统调用」四种视角。</p>
+
+<h2>2. 操作系统的四大特征</h2>
+
+<table class="tbl">
+  <thead>
+    <tr><th>特征</th><th>含义</th><th>典型表现 / 技术</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>并发</strong></td>
+      <td>两个或多个事件在<strong>同一时间间隔内</strong>发生（宏观同时、微观交替）</td>
+      <td>多个进程在一段时间内交替使用 CPU</td>
+    </tr>
+    <tr>
+      <td><strong>共享</strong></td>
+      <td>系统中的资源可供内存中多个并发进程<strong>共同使用</strong></td>
+      <td>互斥共享（打印机）／同时共享（磁盘）</td>
+    </tr>
+    <tr>
+      <td><strong>虚拟</strong></td>
+      <td>把一个物理实体变成若干个<strong>逻辑上的对应物</strong></td>
+      <td>时分复用（虚拟处理机、虚拟设备）／空分复用（虚拟存储器）</td>
+    </tr>
+    <tr>
+      <td><strong>异步</strong></td>
+      <td>进程以<strong>不可预知</strong>的速度向前推进</td>
+      <td>进程走走停停，何时执行、何时暂停不确定</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>2.1 共享的两种方式</h3>
+
+<ul>
+  <li><strong>互斥共享方式</strong>：在一段时间内只允许<strong>一个</strong>进程访问该资源。例如打印机、某些变量。这类资源称为<strong>临界资源（独占资源）</strong>。</li>
+  <li><strong>同时共享方式</strong>：允许在一段时间内由多个进程「同时」（宏观）访问。注意：微观上仍然是<strong>交替</strong>访问的。例如磁盘、可重入代码。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p><strong>并发和共享是操作系统最基本的特征</strong>，二者<strong>互为存在条件</strong>：</p>
+  <p>① 没有并发，就谈不上共享（只有一道程序，无所谓共享）；② 没有共享，并发程序就无法正常推进（资源无法被多个进程使用）。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">高频陷阱：并发 ≠ 并行</div>
+  <p><strong>并发（Concurrence）</strong>：同一<strong>时间间隔</strong>内发生，微观上交替执行，<strong>单核</strong>即可实现。</p>
+  <p><strong>并行（Parallelism）</strong>：同一<strong>时刻</strong>同时发生，必须<strong>多核（多处理机）</strong>硬件支持。</p>
+  <p>一句话：<em>并发是「时间段」，并行是「时间点」；并行是并发在多核下的特例。</em></p>
+</div>
+
+<h2>3. 操作系统的目标与功能</h2>
+
+<h3>3.1 目标</h3>
+
+<p>方便性、有效性、可扩充性、开放性。其中<strong>方便性</strong>与<strong>有效性</strong>是最基本的两个目标。</p>
+
+<h3>3.2 功能：作为系统资源的管理者</h3>
+
+<div class="blk def">
+  <div class="blk__label">四大管理</div>
+  <p><strong>处理机管理</strong>（进程管理）、<strong>存储器管理</strong>（内存管理）、<strong>文件管理</strong>、<strong>设备管理</strong>。</p>
+</div>
+
+<h3>3.3 功能：作为用户与硬件之间的接口</h3>
+
+<table class="tbl">
+  <thead>
+    <tr><th>接口类型</th><th>说明</th><th>举例</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>命令接口</strong></td><td>供用户直接或间接控制作业</td><td>联机命令界面（交互式）、脱机命令界面（批处理 .bat）</td></tr>
+    <tr><td><strong>程序接口</strong></td><td>供程序在运行中请求 OS 服务</td><td><strong>系统调用</strong>（广义指令）</td></tr>
+  </tbody>
+</table>
+
+<h3>3.4 功能：作为扩充机器</h3>
+
+<p>OS 把裸机改造成功能更强、使用更方便的「<strong>扩充机器</strong>」或「<strong>虚拟机</strong>」——用户无需了解硬件细节即可使用计算机。</p>
+
+<h2>4. 本节小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>四特征</strong>：并发、共享、虚拟、异步（「并共虚异」）。</p>
+  <p><strong>最基本的两个</strong>：并发、共享，互为存在条件。</p>
+  <p><strong>四大管理</strong>：处理机、存储器、文件、设备。</p>
+  <p><strong>两类接口</strong>：命令接口、程序接口（系统调用）。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「操作系统的四大特征中最基本的是」→ 答<strong>并发和共享</strong>。</p>
+  <p>② 问「单处理机能否实现并发」→ 能（并发是时间间隔内的宏观同时、微观交替）。</p>
+  <p>③ 给若干说法判断对错，通常错在：把 OS 说成应用软件／把并发说成同一时刻／把系统调用说成命令接口。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>操作系统是指控制和管理整个计算机系统的硬件和软件资源，并合理地组织调度计算机的工作和资源的分配，以提供给用户和其他软件方便的接口和环境的程序集合。</p>
+</div>
+
+<p>完成下方选择题后，进入下一节 <strong>1.2 操作系统的发展历程</strong>。</p>

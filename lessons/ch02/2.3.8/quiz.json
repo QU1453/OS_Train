@@ -1,0 +1,118 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "下列关于管程的叙述中，<strong>正确</strong>的是（　）。",
+      "options": [
+        "管程的互斥性由程序员通过编写 P、V 操作来保证",
+        "管程是一种高级同步机制，其互斥性由编译器负责实现",
+        "管程内的共享数据可以被任意进程直接访问",
+        "管程与普通模块没有区别，只是名字不同"
+      ],
+      "answer": 1,
+      "explain": "管程把共享数据结构及操作它们的一组过程封装在一起，其<strong>互斥性由编译器保证</strong>，对调用者透明，因此 B 正确、A 错误。管程的局部数据只能通过内部过程访问，外部不可见，体现<strong>信息隐藏</strong>，C 错误；管程是抽象数据类型且具备自动互斥，与普通模块不同，D 错误。"
+    },
+    {
+      "id": "q2",
+      "stem": "一个管程通常由若干部分组成，下列<strong>不属于</strong>管程组成部分的是（　）。",
+      "options": [
+        "管程的名称",
+        "局部于管程的共享数据结构",
+        "对共享数据结构进行操作的一组过程",
+        "进程调度队列"
+      ],
+      "answer": 3,
+      "explain": "管程由<strong>管程名称、局部共享数据、一组操作过程以及对局部数据设置初值的初始化语句</strong>组成。进程调度队列是操作系统进程管理的数据结构，不是管程的组成部分，故选 D。"
+    },
+    {
+      "id": "q3",
+      "stem": "任一时刻，能够进入同一管程执行的进程数目至多为（　）。",
+      "options": [
+        "0 个",
+        "1 个",
+        "2 个",
+        "不受限制"
+      ],
+      "answer": 1,
+      "explain": "管程最本质的特征是<strong>互斥性</strong>：任一时刻<strong>至多只有一个</strong>进程能在管程内执行某个过程，从而保证对共享数据结构的操作互斥。故选 B。"
+    },
+    {
+      "id": "q4",
+      "stem": "关于管程中条件变量的 <code>wait()</code> 与 <code>signal()</code> 操作，下列叙述中<strong>错误</strong>的是（　）。",
+      "options": [
+        "wait 使调用进程阻塞，并释放管程",
+        "signal 唤醒在该条件变量等待队列上的一个进程",
+        "若 signal 时没有进程等待，则信号被累积下来，待以后 wait 时立即生效",
+        "条件变量只能在其所属管程内部使用"
+      ],
+      "answer": 2,
+      "explain": "条件变量的 signal <strong>不会累积</strong>：若发出信号时没有进程在等待，则该操作<strong>没有任何效果，信号直接丢失</strong>（这与信号量的 V 操作会累积计数截然不同），故 C 错误。A、B、D 均正确：wait 阻塞并释放管程；signal 唤醒一个等待者；条件变量只在管程内部使用。"
+    },
+    {
+      "id": "q5",
+      "stem": "下列关于管程与信号量机制的对比，叙述中<strong>正确</strong>的是（　）。",
+      "options": [
+        "信号量是高级同步机制，管程是低级同步机制",
+        "管程的互斥由程序员编码实现，信号量的互斥由编译器实现",
+        "管程把共享数据与操作封装起来并由编译器保证互斥，信号量的 P/V 由程序员自行安排",
+        "条件变量的 signal 与信号量的 V 操作语义完全相同"
+      ],
+      "answer": 2,
+      "explain": "管程是<strong>高级</strong>同步机制，信号量是<strong>低级</strong>同步机制，A 说反，错误；管程互斥由<strong>编译器</strong>保证、信号量需<strong>程序员</strong>自行安排 P/V，B 说反，错误，C 正确；条件变量无值、signal 会丢失，与信号量 V 会累积不同，D 错误。"
+    },
+    {
+      "id": "q6",
+      "stem": "在用管程实现生产者—消费者问题时，缓冲区已满时生产者应执行的操作是（　）。",
+      "options": [
+        "调用 notfull.wait() 进入等待",
+        "调用 notempty.wait() 进入等待",
+        "直接退出管程放弃生产",
+        "忙等待直到缓冲区出现空位"
+      ],
+      "answer": 0,
+      "explain": "缓冲区满时，生产者需要等待的条件是「缓冲区不满」，应对条件变量 <code>notfull</code> 执行 <code>wait()</code>，使自己阻塞并释放管程，故 A 正确。<code>notempty</code> 是「不空」条件，用于消费者等待，B 错误；退出管程会丢失生产请求，C 错误；管程中的等待是<strong>阻塞</strong>而非忙等，D 错误。"
+    },
+    {
+      "id": "q7",
+      "stem": "管程具有一些基本特性，下列<strong>不属于</strong>管程特性的是（　）。",
+      "options": [
+        "模块化",
+        "抽象数据类型",
+        "信息隐藏",
+        "进程的并发执行由管程负责调度"
+      ],
+      "answer": 3,
+      "explain": "管程的基本特性包括<strong>模块化、抽象数据类型、信息隐藏和互斥性</strong>。管程只保证任一时刻至多一个进程在其内活动，<strong>并不负责进程调度</strong>，调度由操作系统的处理机调度程序完成，D 错误。"
+    },
+    {
+      "id": "q8",
+      "stem": "用管程解决同步问题时，管程内部的各过程在执行时（　）。",
+      "options": [
+        "仍必须显式地对共享数据加锁",
+        "不需要再对共享数据加锁，因为管程已保证互斥",
+        "必须由调用者先执行 P 操作再进入",
+        "只能串行地被同一进程重复调用"
+      ],
+      "answer": 1,
+      "explain": "管程的互斥由编译器保证，<strong>任一时刻至多一个进程在管程内</strong>，因此过程内部<strong>无需再对共享数据加锁</strong>，B 正确、A 错误。调用者不必执行 P 操作，进入管程的互斥由系统自动完成，C 错误；管程过程可被不同进程分别调用，D 错误。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "用管程实现有界缓冲区（生产者—消费者）",
+      "prompt": "<p>用一个<strong>管程</strong>管理容量为 <code>capacity</code> 的有界缓冲区，模拟生产者与消费者的执行。给定操作序列 <code>ops</code>：</p><ul><li><code>[\"produce\", data]</code>：生产者尝试放入数据 <code>data</code>；若缓冲区已满，则该生产者进入<strong>条件变量 notfull 的等待队列</strong>。</li><li><code>[\"consume\"]</code>：消费者尝试取出一个数据（先进先出，从队首取）；若缓冲区为空，则进入<strong>条件变量 notempty 的等待队列</strong>。</li></ul><p>管程保证互斥，因此每步只需按顺序处理。请在<strong>每次操作之后</strong>按管程语义尽量唤醒等待者：先尽量唤醒等待的生产者（缓冲区未满则把一个等待的生产数据追加到缓冲区尾部），再尽量唤醒等待的消费者（缓冲区非空则从队首取出并计入已消费）。</p><p>返回一个字典：<code>{\"consumed\": [已消费数据...], \"buffer\": [缓冲区剩余数据...], \"waited\": 最终仍在等待的进程总数}</code>。</p>",
+      "c_reference": "/* 等价 C 语言参考：管程实现有界缓冲区（示意） */\n#include <stdio.h>\n#include <string.h>\n\ntypedef struct {\n    int  buf[64], head, tail, count, cap;\n    int  wait_prod[64], wait_prod_n;    /* notfull 等待队列（存放待生产数据）*/\n    int  wait_cons;                     /* notempty 等待队列长度 */\n    int  consumed[256], consumed_n;\n} Monitor;\n\n/* 管程初始化：只在创建时执行一次 */\nvoid mon_init(Monitor *m, int cap) {\n    m->head = m->tail = m->count = 0; m->cap = cap;\n    m->wait_prod_n = 0; m->wait_cons = 0; m->consumed_n = 0;\n}\n\n/* 内部：尝试唤醒等待的生产者——缓冲区不满则放入队尾 */\nstatic void signal_notfull(Monitor *m) {\n    if (m->wait_prod_n > 0 && m->count < m->cap) {\n        int x = m->wait_prod[0];\n        for (int i = 1; i < m->wait_prod_n; i++) m->wait_prod[i-1] = m->wait_prod[i];\n        m->wait_prod_n--;\n        m->buf[m->tail] = x; m->tail = (m->tail + 1) % m->cap; m->count++;\n    }\n}\n\n/* 内部：尝试唤醒等待的消费者——缓冲区非空则取出队首 */\nstatic void signal_notempty(Monitor *m) {\n    if (m->wait_cons > 0 && m->count > 0) {\n        m->consumed[m->consumed_n++] = m->buf[m->head];\n        m->head = (m->head + 1) % m->cap; m->count--;\n        m->wait_cons--;\n    }\n}\n\n/* 管程过程 produce：满则 notfull.wait()，否则入缓冲区；随后 notempty.signal() */\nvoid produce(Monitor *m, int data) {\n    if (m->count >= m->cap) {\n        m->wait_prod[m->wait_prod_n++] = data;   /* 进入等待 */\n    } else {\n        m->buf[m->tail] = data; m->tail = (m->tail + 1) % m->cap; m->count++;\n    }\n    signal_notfull(m);\n    signal_notempty(m);\n}\n\n/* 管程过程 consume：空则 notempty.wait()，否则取队首；随后 notfull.signal() */\nvoid consume(Monitor *m) {\n    if (m->count == 0) {\n        m->wait_cons++;                          /* 进入等待 */\n    } else {\n        m->consumed[m->consumed_n++] = m->buf[m->head];\n        m->head = (m->head + 1) % m->cap; m->count--;\n    }\n    signal_notfull(m);\n    signal_notempty(m);\n}\n\nint main(void) {\n    Monitor m; mon_init(&m, 2);\n    produce(&m, 'A'); produce(&m, 'B'); produce(&m, 'C');\n    consume(&m); consume(&m); consume(&m);\n    for (int i = 0; i < m.consumed_n; i++) printf(\"%c \", m.consumed[i]);\n    printf(\"| waited=%d\\n\", m.wait_prod_n + m.wait_cons);\n    return 0;\n}\n",
+      "python_reference": "def solve(ops, capacity):\n    \"\"\"管程实现有界缓冲区：单线程按顺序模拟管程（管程天然互斥）。\n\n    ops: 操作序列，元素为 [\"produce\", data] 或 [\"consume\"]。\n    capacity: 缓冲区容量。\n    返回: {\"consumed\": [...], \"buffer\": [...], \"waited\": int}\n    \"\"\"\n    buffer = []            # 管程内的共享缓冲区\n    wait_producers = []    # 条件变量 notfull 的等待队列（存待生产数据）\n    wait_consumers = []    # 条件变量 notempty 的等待队列\n    consumed = []\n\n    for op in ops:\n        kind = op[0]\n        if kind == \"produce\":\n            data = op[1]\n            if len(buffer) >= capacity:\n                wait_producers.append(data)   # notfull.wait()\n            else:\n                buffer.append(data)\n        elif kind == \"consume\":\n            if not buffer:\n                wait_consumers.append(1)      # notempty.wait()\n            else:\n                consumed.append(buffer.pop(0))\n\n        # 每次操作后，先尽量唤醒等待的生产者，再尽量唤醒等待的消费者\n        while wait_producers and len(buffer) < capacity:\n            buffer.append(wait_producers.pop(0))\n        while wait_consumers and buffer:\n            consumed.append(buffer.pop(0))\n            wait_consumers.pop(0)\n\n    return {\n        \"consumed\": consumed,\n        \"buffer\": buffer,\n        \"waited\": len(wait_producers) + len(wait_consumers),\n    }\n",
+      "starter_python": "def solve(ops, capacity):\n    \"\"\"管程实现有界缓冲区。\n\n    ops: 操作序列，元素为 [\"produce\", data] 或 [\"consume\"]。\n    capacity: 缓冲区容量。\n    返回: {\"consumed\": [...], \"buffer\": [...], \"waited\": int}\n    \"\"\"\n    # TODO: 维护 buffer / wait_producers / wait_consumers / consumed 四个结构，\n    #       produce 时若缓冲区已满则令生产者等待（notfull.wait），\n    #       consume 时若缓冲区为空则令消费者等待（notempty.wait），\n    #       并在每次操作后按管程语义尽量唤醒等待的生产者/消费者。\n    pass\n",
+      "judge_problem_id": "monitor-bounded-buffer",
+      "hints": [
+        "管程天然互斥，单线程按 ops 顺序模拟即可，无需考虑加锁。",
+        "缓冲区满时，生产者把数据压入 notfull 的等待队列（对应 notfull.wait）。",
+        "缓冲区空时，消费者在 notempty 队列登记一次等待（对应 notempty.wait）。",
+        "每次操作结束后先尝试唤醒生产者（buffer 未满就补入队尾），再尝试唤醒消费者（buffer 非空就取队首）。",
+        "最终 waited = 仍未出队的生产者等待数 + 仍未满足的消费者等待数。"
+      ]
+    }
+  ]
+}

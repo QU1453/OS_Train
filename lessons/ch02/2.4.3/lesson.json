@@ -1,0 +1,12 @@
+{
+  "id": "2.4.3",
+  "chapter": "ch02",
+  "order": 27,
+  "title": "死锁避免与银行家算法",
+  "subtitle": "安全状态 · 安全序列 · 银行家算法",
+  "tags": ["计算", "高频", "动画", "代码"],
+  "difficulty": "提高",
+  "minutes": 32,
+  "exam": "安全状态与安全序列；银行家算法的数据结构（Available/Max/Allocation/Need）；安全性检查算法；资源请求算法；判断某状态是否安全并给出安全序列",
+  "scenes": ["banker"]
+}

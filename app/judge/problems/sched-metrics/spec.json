@@ -1,0 +1,64 @@
+{
+  "id": "sched-metrics",
+  "title": "调度算法评价指标计算",
+  "kind": "deterministic",
+  "entry": "solve",
+  "arg_names": ["jobs"],
+  "compare": "numeric",
+  "tol": 0.01,
+  "cases": [
+    {
+      "name": "两作业：后到达者需等待",
+      "input": {
+        "jobs": [
+          { "name": "A", "arrival": 0, "service": 4 },
+          { "name": "B", "arrival": 2, "service": 5 }
+        ]
+      },
+      "expected": { "avg_turnaround": 5.5, "avg_weighted_turnaround": 1.2, "avg_waiting": 1.0 }
+    },
+    {
+      "name": "到达时间间隔大，中间出现空闲",
+      "input": {
+        "jobs": [
+          { "name": "A", "arrival": 0, "service": 3 },
+          { "name": "B", "arrival": 10, "service": 2 }
+        ]
+      },
+      "expected": { "avg_turnaround": 2.5, "avg_weighted_turnaround": 1.0, "avg_waiting": 0.0 }
+    },
+    {
+      "name": "三作业同到达、同服务",
+      "input": {
+        "jobs": [
+          { "name": "A", "arrival": 0, "service": 1 },
+          { "name": "B", "arrival": 0, "service": 1 },
+          { "name": "C", "arrival": 0, "service": 1 }
+        ]
+      },
+      "expected": { "avg_turnaround": 2.0, "avg_weighted_turnaround": 2.0, "avg_waiting": 1.0 }
+    },
+    {
+      "name": "长-中-短混合",
+      "input": {
+        "jobs": [
+          { "name": "A", "arrival": 0, "service": 7 },
+          { "name": "B", "arrival": 2, "service": 4 },
+          { "name": "C", "arrival": 4, "service": 1 }
+        ]
+      },
+      "expected": { "avg_turnaround": 8.0, "avg_weighted_turnaround": 3.75, "avg_waiting": 4.0 }
+    },
+    {
+      "name": "首作业晚到达，起始空闲",
+      "input": {
+        "jobs": [
+          { "name": "A", "arrival": 5, "service": 3 },
+          { "name": "B", "arrival": 0, "service": 2 },
+          { "name": "C", "arrival": 2, "service": 4 }
+        ]
+      },
+      "expected": { "avg_turnaround": 8.33, "avg_weighted_turnaround": 3.0, "avg_waiting": 5.33 }
+    }
+  ]
+}

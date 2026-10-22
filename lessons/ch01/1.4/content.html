@@ -1,0 +1,138 @@
+<h2>1. 操作系统结构的由来</h2>
+
+<p>操作系统是一个庞大的系统软件，为便于设计、维护与扩充，需要按一定方式把它划分成若干<strong>相对独立的模块或层次</strong>。常见结构有：分层结构、模块化结构、宏内核、微内核、外核等。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>操作系统的结构</strong>是指操作系统内核各组成部分的<strong>组织方式</strong>，即如何把庞大功能拆分为若干模块或层次，并规定它们之间的调用与依赖关系。</p>
+</div>
+
+<h2>2. 分层结构</h2>
+
+<ul>
+  <li>内核分成<strong>若干层</strong>，每层只使用其<strong>下一层</strong>提供的功能和服务，并为其<strong>上一层</strong>提供服务。</li>
+  <li><strong>优点</strong>：层次清晰、便于调试和验证（自底向上逐层构建，每层只需保证下层正确）、便于扩充与维护、易于按层替换。</li>
+  <li><strong>缺点</strong>：层次划分难以确定；<strong>只能相邻层调用</strong>，不够灵活；层层调用带来额外开销，<strong>效率低</strong>。</li>
+</ul>
+
+<h2>3. 模块化结构</h2>
+
+<ul>
+  <li>按功能把内核划分为若干<strong>模块</strong>，各模块独立设计，按<strong>接口</strong>互相调用。</li>
+  <li><strong>优点</strong>：提高设计的正确性、可理解性与可维护性；模块可<strong>并发开发</strong>；调用灵活。</li>
+  <li><strong>缺点</strong>：模块接口难以定义；各模块<strong>协作关系复杂</strong>，可能相互牵连，难以满足一致的目标。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>分层结构强调「<strong>只能相邻层调用</strong>」，模块化结构强调「<strong>按功能划分模块、按接口调用</strong>」。二者常结合使用，即<strong>层次式模块化</strong>结构。</p>
+</div>
+
+<h2>4. 宏内核（大内核）</h2>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>宏内核（Monolithic Kernel，大内核）</strong>把操作系统的主要功能模块（进程管理、存储器管理、文件管理、设备管理等）都放入<strong>系统内核</strong>，运行在<strong>核心态</strong>、同一地址空间中。</p>
+</div>
+
+<ul>
+  <li><strong>优点</strong>：各模块之间可直接调用，<strong>性能高、效率高</strong>。</li>
+  <li><strong>缺点</strong>：结构庞大、内核代码复杂，<strong>难以维护</strong>；一个模块出错可能导致<strong>整个内核崩溃</strong>，稳定性、可靠性较差。</li>
+</ul>
+
+<h2>5. 微内核</h2>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>微内核（Microkernel）</strong>只把操作系统中最基本、最核心的功能（如<strong>进程管理、低级存储器管理、中断和陷入处理</strong>等）保留在内核中运行于核心态；其余功能（文件系统、设备驱动、网络等）以<strong>服务器进程</strong>的形式运行在<strong>用户态</strong>。</p>
+</div>
+
+<div class="blk key">
+  <div class="blk__label">关键结论（803 高频）</div>
+  <p>微内核的<strong>主要优点</strong>：</p>
+  <p>① <strong>可扩展性、灵活性</strong>：增删功能只需在用户态增加或修改服务器，不必改动内核；</p>
+  <p>② <strong>可靠性、稳定性好</strong>：内核代码少，某个服务器出错一般不会导致整个系统崩溃；</p>
+  <p>③ <strong>可移植性好</strong>：与硬件相关的代码多在内核之外；</p>
+  <p>④ <strong>支持分布式计算</strong>：采用客户/服务器模式，便于网络化。</p>
+  <p>微内核的<strong>主要缺点</strong>：用户态与核心态之间频繁<strong>切换</strong>、服务器之间通过<strong>消息传递</strong>通信，导致<strong>性能开销大、效率低</strong>。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>微内核的「<strong>小</strong>」指内核功能<strong>少</strong>，其代价是<strong>效率降低</strong>。考题常把「效率高、性能好」当作微内核的优点——这其实是<strong>宏内核</strong>的优点。</p>
+</div>
+
+<h2>6. 外核</h2>
+
+<ul>
+  <li><strong>外核（Exokernel）</strong>的思想：内核只负责<strong>资源的安全分配与保护</strong>（把物理资源直接暴露给用户进程），把对硬件的具体管理<strong>交给用户态</strong>的程序库去完成。</li>
+  <li><strong>优点</strong>：减少抽象层次、灵活、性能高，便于应用定制资源管理策略。</li>
+  <li><strong>缺点</strong>：设计复杂，仍多处于研究阶段，实际系统中应用较少。</li>
+</ul>
+
+<h2>7. 各结构对比</h2>
+
+<table class="tbl">
+  <thead>
+    <tr><th>结构</th><th>核心思想</th><th>主要优点</th><th>主要缺点</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>分层结构</strong></td>
+      <td>分若干层，只相邻层调用</td>
+      <td>清晰、易调试、易维护</td>
+      <td>层次难划分、效率低、不灵活</td>
+    </tr>
+    <tr>
+      <td><strong>模块化结构</strong></td>
+      <td>按功能划模块、按接口调用</td>
+      <td>可并发开发、灵活、可维护</td>
+      <td>接口难定义、协作关系复杂</td>
+    </tr>
+    <tr>
+      <td><strong>宏内核</strong></td>
+      <td>主要功能都在核心态内核</td>
+      <td>性能高、效率高</td>
+      <td>庞大、难维护、稳定性差</td>
+    </tr>
+    <tr>
+      <td><strong>微内核</strong></td>
+      <td>内核只保留最基本功能</td>
+      <td>可靠、灵活、可移植、支持分布</td>
+      <td>状态切换频繁、效率低</td>
+    </tr>
+    <tr>
+      <td><strong>外核</strong></td>
+      <td>内核只分配与保护资源</td>
+      <td>灵活、性能高、可定制</td>
+      <td>设计复杂、不成熟</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="scene" data-scene="os-structure"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>8. 本节小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>分层</strong>：相邻调用、清晰但慢。</p>
+  <p><strong>模块化</strong>：功能分块、接口连接。</p>
+  <p><strong>宏内核</strong>：大而快，缺点是不稳。</p>
+  <p><strong>微内核</strong>：小而稳、可扩展、可移植，缺点是慢。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「微内核结构的主要优点」→ 可靠、灵活/可扩展、可移植、支持分布式（注意<strong>不含</strong>「效率高」）。</p>
+  <p>② 问「宏内核与微内核的区别」→ 核心功能是否都在核心态内核、系统调用开销大小。</p>
+  <p>③ 给若干说法判断对错，通常错在：把<strong>微内核</strong>说成「性能高」、把<strong>分层</strong>说成「可任意跨层调用」。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>微内核结构将操作系统中一些最基本的功能保留在内核，其余功能移到用户态实现，采用客户/服务器模式，通过消息传递通信，可扩展性和可靠性好，但性能有所下降。</p>
+</div>
+
+<p>完成下方选择题后，进入下一节 <strong>1.5 操作系统引导</strong>。</p>

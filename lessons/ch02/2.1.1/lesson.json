@@ -1,0 +1,17 @@
+{
+  "id": "2.1.1",
+  "chapter": "ch02",
+  "order": 8,
+  "title": "进程的概念和特征",
+  "subtitle": "程序与进程 · PCB · 五大特征",
+  "tags": [
+    "概念",
+    "高频"
+  ],
+  "difficulty": "基础",
+  "minutes": 25,
+  "exam": "进程与程序的区别；进程的组成（PCB、程序段、数据段）；进程的特征",
+  "scenes": [
+    "proc-concept"
+  ]
+}

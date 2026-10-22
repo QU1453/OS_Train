@@ -1,0 +1,128 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "进程控制一般由一组原语实现，原语的主要特点是（　）。",
+      "options": [
+        "执行时间很短",
+        "具有原子性，执行期间不可被中断",
+        "一定运行在用户态",
+        "只能由用户程序调用"
+      ],
+      "answer": 1,
+      "explain": "原语的本质特征是<strong>原子性</strong>——要么全做、要么全不做，执行期间不允许被中断，B 正确。原语通常是内核程序，运行在<strong>内核态</strong>，由系统调用/内核触发，故 C、D 错误；「短」不是其定义特征，A 错误。"
+    },
+    {
+      "id": "q2",
+      "stem": "为保证原语的原子性，通常采用的方法是（　）。",
+      "options": [
+        "提高进程优先级",
+        "在进入原语时关中断，退出时开中断",
+        "把原语放入就绪队列",
+        "给原语分配更长的 CPU 时间片"
+      ],
+      "answer": 1,
+      "explain": "进程切换多由时钟中断引起，因此原语通过<strong>关中断/开中断</strong>来保证执行期间不被打断，从而具备原子性，B 正确。其余选项均与原语原子性无关。"
+    },
+    {
+      "id": "q3",
+      "stem": "一个进程被创建后，其状态通常为（　）。",
+      "options": [
+        "运行态",
+        "就绪态",
+        "阻塞态",
+        "终止态"
+      ],
+      "answer": 1,
+      "explain": "创建原语完成分配 PCB、分配资源、初始化后，会把新进程插入<strong>就绪队列</strong>，即进入<strong>就绪态</strong>，等待被调度。它不会立即运行，也不可能一创建就阻塞。"
+    },
+    {
+      "id": "q4",
+      "stem": "下列关于进程阻塞与唤醒的叙述中，<strong>正确</strong>的是（　）。",
+      "options": [
+        "阻塞原语由正在运行的进程自己调用，唤醒原语由其它进程或系统调用",
+        "阻塞原语由其它进程调用，唤醒原语由进程自己调用",
+        "阻塞与唤醒原语都由操作系统自动调用，进程不能参与",
+        "被唤醒的进程直接进入运行态"
+      ],
+      "answer": 0,
+      "explain": "进程因等待事件而<strong>主动</strong>调用<strong>阻塞原语</strong>暂停自己；当事件由中断或其它进程完成后，<strong>唤醒原语</strong>把它唤醒，A 正确、B 与 C 错误。被唤醒的进程进入<strong>就绪态</strong>（就绪队列队尾），不能直接运行，D 错误。"
+    },
+    {
+      "id": "q5",
+      "stem": "某运行态进程调用阻塞原语后，下列操作中<strong>不会</strong>发生的是（　）。",
+      "options": [
+        "该进程状态改为阻塞态",
+        "该进程的 PCB 被插入阻塞队列",
+        "该进程的 PCB 被插入就绪队列队尾",
+        "系统转向调度程序，另选一个进程运行"
+      ],
+      "answer": 2,
+      "explain": "阻塞原语把进程状态改为<strong>阻塞态</strong>并插入<strong>阻塞队列</strong>，然后转调度程序另选进程，A、B、D 都会发生。插入<strong>就绪队列队尾</strong>是<strong>唤醒</strong>时才做的事，阻塞时不会发生，故选 C。"
+    },
+    {
+      "id": "q6",
+      "stem": "撤销一个进程时，通常还应同时撤销（　）。",
+      "options": [
+        "它的父进程",
+        "它的所有子进程",
+        "与它共享内存的进程",
+        "就绪队列中的全部进程"
+      ],
+      "answer": 1,
+      "explain": "撤销进程时需回收其资源；为避免子进程成为无法回收的「孤儿」，通常<strong>同时撤销其所有子进程</strong>，B 正确。父进程、共享内存进程、就绪队列其它进程都不应被连带撤销。"
+    },
+    {
+      "id": "q7",
+      "stem": "进程切换（上下文切换）需要完成的关键动作是（　）。",
+      "options": [
+        "仅仅修改新进程的优先级",
+        "保存当前进程的处理机现场到其 PCB，并恢复被选中进程的现场",
+        "把当前进程的所有资源都复制一份给新进程",
+        "把当前进程直接放入阻塞队列"
+      ],
+      "answer": 1,
+      "explain": "进程切换的本质是<strong>保存旧进程现场（存于其 PCB）并恢复新进程现场</strong>，从而把 CPU 交给新进程，B 正确。A 只是调度信息，C 与切换无关，D 仅在阻塞时发生。"
+    },
+    {
+      "id": "q8",
+      "stem": "下列事件中，<strong>不能</strong>引起进程切换的是（　）。",
+      "options": [
+        "当前进程的时间片用完",
+        "当前进程因请求 I/O 而阻塞",
+        "一个更高优先级的进程进入就绪队列（抢占式调度下）",
+        "一个阻塞进程等待的事件还未发生"
+      ],
+      "answer": 3,
+      "explain": "时间片用完、进程阻塞、更高优先级进程到来都可能引起切换，A、B、C 均可。而「等待的事件还未发生」意味着阻塞进程继续<strong>保持阻塞</strong>，不会引起任何切换，故选 D。"
+    },
+    {
+      "id": "q9",
+      "stem": "下列说法中，<strong>错误</strong>的是（　）。",
+      "options": [
+        "进程控制原语执行时需要处于内核态",
+        "原语是不可被中断的",
+        "阻塞原语和唤醒原语都应成对出现",
+        "创建进程时需要为进程分配 PCB，撤销进程时 PCB 可以保留以供复用"
+      ],
+      "answer": 3,
+      "explain": "撤销进程时要<strong>回收（撤销）PCB</strong>，PCB 是进程存在的唯一标志，进程消亡后其 PCB 不应保留，D 错误。原语运行在内核态、具有原子性、阻塞与唤醒成对使用，A、B、C 均正确。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "进程控制：用就绪队列与阻塞队列模拟原语",
+      "prompt": "<p>用两个数据结构模拟进程控制原语对进程队列的影响：<strong>就绪队列 <code>ready</code>（有序）</strong>与<strong>阻塞集合 <code>blocked</code></strong>。</p><p>输入是字符串列表 <code>ops</code>，每条形如 <code>\"命令 pid\"</code>，按顺序依次执行：</p><ul><li><code>create &lt;pid&gt;</code>：将 pid 追加到<strong>就绪队列队尾</strong>；</li><li><code>block &lt;pid&gt;</code>：将 pid 从就绪队列移除，并放入<strong>阻塞集合</strong>；</li><li><code>wakeup &lt;pid&gt;</code>：若 pid 当前在阻塞集合中，则将其移除并追加到<strong>就绪队列队尾</strong>；否则<strong>忽略</strong>该操作；</li><li><code>exit &lt;pid&gt;</code>：将 pid 从就绪队列和阻塞集合中<strong>都移除</strong>。</li></ul><p>返回全部操作执行完毕后<strong>就绪队列中的 pid 列表</strong>（保持先后顺序）。</p>",
+      "c_reference": "#include <stdio.h>\n#include <string.h>\n\n#define MAXN 256\n\nstatic int find(char arr[][32], int n, const char *pid) {\n    for (int i = 0; i < n; ++i)\n        if (!strcmp(arr[i], pid)) return i;\n    return -1;\n}\n\nstatic void remove_at(char arr[][32], int *n, int idx) {\n    for (int i = idx; i + 1 < *n; ++i) strcpy(arr[i], arr[i + 1]);\n    (*n)--;\n}\n\n/* ops: 形如 \"create p1\" 的字符串数组；n 为操作条数\n * out: 输出就绪队列 pid；返回就绪队列长度 */\nint solve(char ops[][32], int n, char out[][32]) {\n    char ready[MAXN][32];   int rn = 0;\n    char blocked[MAXN][32]; int bn = 0;\n\n    for (int i = 0; i < n; ++i) {\n        char cmd[32], pid[32];\n        pid[0] = '\\0';\n        sscanf(ops[i], \"%31s %31s\", cmd, pid);\n\n        if (!strcmp(cmd, \"create\")) {\n            strcpy(ready[rn++], pid);\n        } else if (!strcmp(cmd, \"block\")) {\n            int k = find(ready, rn, pid);\n            if (k >= 0) remove_at(ready, &rn, k);\n            strcpy(blocked[bn++], pid);\n        } else if (!strcmp(cmd, \"wakeup\")) {\n            int k = find(blocked, bn, pid);\n            if (k >= 0) {\n                remove_at(blocked, &bn, k);\n                strcpy(ready[rn++], pid);\n            }\n        } else if (!strcmp(cmd, \"exit\")) {\n            int k = find(ready, rn, pid);\n            if (k >= 0) remove_at(ready, &rn, k);\n            k = find(blocked, bn, pid);\n            if (k >= 0) remove_at(blocked, &bn, k);\n        }\n    }\n\n    for (int i = 0; i < rn; ++i) strcpy(out[i], ready[i]);\n    return rn;\n}\n",
+      "python_reference": "def solve(ops):\n    ready = []          # 就绪队列：有序，队尾为末尾\n    blocked = set()     # 阻塞集合：只关心成员关系\n\n    for op in ops:\n        parts = op.split()\n        if not parts:\n            continue\n        cmd = parts[0]\n        pid = parts[1] if len(parts) > 1 else None\n\n        if cmd == \"create\":\n            ready.append(pid)                 # 入就绪队列队尾\n        elif cmd == \"block\":\n            if pid in ready:                  # 从就绪队列移除\n                ready.remove(pid)\n            blocked.add(pid)                  # 放入阻塞集合\n        elif cmd == \"wakeup\":\n            if pid in blocked:                # 只有真正在阻塞集合中才唤醒\n                blocked.discard(pid)\n                ready.append(pid)             # 回到就绪队列队尾\n        elif cmd == \"exit\":\n            if pid in ready:                  # 就绪队列中移除\n                ready.remove(pid)\n            blocked.discard(pid)              # 阻塞集合中移除\n\n    return ready\n",
+      "starter_python": "def solve(ops):\n    # 模拟 create / block / wakeup / exit 对就绪队列与阻塞集合的影响\n    #   create <pid> : pid 追加到就绪队列队尾\n    #   block  <pid> : pid 从就绪队列移除，放入阻塞集合\n    #   wakeup <pid> : pid 若在阻塞集合中，移除并追加到就绪队列队尾；否则忽略\n    #   exit   <pid> : pid 从就绪队列与阻塞集合中都移除\n    # 返回最终就绪队列中的 pid 列表（保持顺序）\n    ready = []\n    blocked = set()\n    # TODO: 遍历 ops，按上述规则更新 ready 与 blocked\n    return ready\n",
+      "judge_problem_id": "process-control",
+      "hints": [
+        "就绪队列用列表（有顺序），阻塞集合用 set（只判断成员）。",
+        "wakeup 时只有 pid 确实在阻塞集合中才把它放回就绪队列队尾，否则忽略。",
+        "exit 要同时从就绪队列（若在）和阻塞集合中移除该 pid。"
+      ]
+    }
+  ]
+}

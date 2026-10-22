@@ -1,0 +1,161 @@
+<h2>2.2.1 调度的概念与层次</h2>
+
+<p>在多道程序系统中，处于就绪状态、等待处理机的进程往往多于处理机的数目，于是系统必须回答三个问题：<strong>由谁来用 CPU、什么时候用、能用多久</strong>。这种「按某种规则从就绪进程中选择一个占用处理机」的行为，就是<strong>处理机调度</strong>。调度是操作系统处理机管理的核心，直接决定了系统的吞吐量、资源利用率以及各用户作业的响应快慢。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>调度（Scheduling）</strong>是指在多道程序系统中，按照<strong>一定的算法</strong>从就绪队列中选择一个进程并把处理机分配给它使用的过程。调度的实质是<strong>对处理机资源在多个并发进程之间进行合理分配</strong>。</p>
+</div>
+
+<h2>1. 调度要解决的三个基本问题</h2>
+
+<ul>
+  <li><strong>何时分配</strong>：即调度的时机问题（详见 2.2.2 节）。</li>
+  <li><strong>分给谁</strong>：即调度算法问题，用什么规则挑选进程（详见 2.2.4 节）。</li>
+  <li><strong>分多少</strong>：即调度的层次问题，在哪一级队列上、分配的是处理机还是内存。</li>
+</ul>
+
+<p>本节聚焦第三个问题——<strong>调度的层次</strong>，也就是常考的三级调度。</p>
+
+<h2>2. 调度的三个层次</h2>
+
+<p>按照调度发生的「层次」和所处理的对象不同，可以把调度分为<strong>高级调度、中级调度、低级调度</strong>三级。层次越高，面向的「对象」越粗（作业），层次越低，面向的对象越细、越靠近 CPU（进程）。</p>
+
+<h3>2.1 高级调度（作业调度 / 长程调度）</h3>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>高级调度（High-level Scheduling）</strong>又称<strong>作业调度</strong>或<strong>长程调度</strong>，它按照一定算法从<strong>外存后备队列</strong>中挑选一个或多个作业，为它们分配内存、输入输出设备等必要资源，并为其建立相应的进程，使之进入内存投入运行。</p>
+</div>
+
+<p>高级调度的关键特征：</p>
+
+<ul>
+  <li><strong>对象是「作业」</strong>：作业是用户在一次算题过程中要求计算机所做工作的集合，还停留在外存（后备状态）。</li>
+  <li><strong>频率最低</strong>：作业调度的次数很少（一个作业往往只被调度一次），因此又称<strong>长程调度</strong>。</li>
+  <li><strong>决定「多道度」</strong>：它决定内存中同时有多少个作业（进程），即决定系统的<strong>多道程序度</strong>。</li>
+  <li><strong>必须考虑因素</strong>：是否接纳该作业，要综合考量系统资源、作业的类型与优先级、内存容量等。</li>
+</ul>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>高级调度的直接结果是<strong>「创建进程」并让它进入就绪队列</strong>，作业从「后备状态」变成「执行状态」；作业经高级调度进入内存后，才可能被低级调度选中真正占用 CPU。</p>
+</div>
+
+<h3>2.2 中级调度（内存调度 / 对换）</h3>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>中级调度（Intermediate-level Scheduling）</strong>又称<strong>内存调度</strong>或称<strong>对换（Swapping）</strong>，其主要任务是按照某种策略，决定把内存中的哪些进程<strong>换出</strong>到外存（挂起），以及把外存上哪些已具备运行条件的进程重新<strong>换入</strong>内存（激活）。</p>
+</div>
+
+<p>中级调度的作用，是在内存紧张时通过「换出—换入」平衡内存负载，使内存中保持合理的进程数量，从而提高内存利用率和系统吞吐量。被中级调度换出内存的进程处于<strong>挂起状态</strong>（就绪挂起 / 阻塞挂起）。</p>
+
+<h3>2.3 低级调度（进程调度 / 短程调度）</h3>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>低级调度（Low-level Scheduling）</strong>又称<strong>进程调度</strong>或<strong>短程调度</strong>，它按照某种算法从<strong>就绪队列</strong>中挑选一个进程，把处理机分配给它使用。</p>
+</div>
+
+<p>低级调度的关键特征：</p>
+
+<ul>
+  <li><strong>对象是「进程（内核级线程）」</strong>：直接面对就绪队列，是离 CPU 最近的一级调度。</li>
+  <li><strong>频率最高</strong>：进程被阻塞、时间片用完、被抢占时都可能触发，因此又称<strong>短程调度</strong>。</li>
+  <li><strong>决定「谁上 CPU」</strong>：它真正实现了处理机的分配，是最基本、不可缺少的一级调度。</li>
+</ul>
+
+<h3>2.4 三级调度的对比与联系</h3>
+
+<table class="tbl">
+  <thead>
+    <tr><th>层次</th><th>别名</th><th>调度对象</th><th>发生位置</th><th>主要作用</th><th>频率</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>高级调度</strong></td>
+      <td>作业调度 / 长程调度</td>
+      <td>作业</td>
+      <td>外存后备队列 → 内存</td>
+      <td>创建进程，决定多道度</td>
+      <td>最低</td>
+    </tr>
+    <tr>
+      <td><strong>中级调度</strong></td>
+      <td>内存调度 / 对换</td>
+      <td>进程（挂起/激活）</td>
+      <td>内存 ↔ 外存</td>
+      <td>调节内存负载，提高利用率</td>
+      <td>中等</td>
+    </tr>
+    <tr>
+      <td><strong>低级调度</strong></td>
+      <td>进程调度 / 短程调度</td>
+      <td>进程 / 内核级线程</td>
+      <td>就绪队列 → CPU</td>
+      <td>真正分配处理机</td>
+      <td>最高</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>① 三级调制中，<strong>低级调度（进程调度）是必需且最频繁的</strong>，任何操作系统都必须具备；高级调度和中级调度则可以有、也可以没有。</p>
+  <p>② 三者的层级关系是：<strong>作业 → 内存 → 处理机</strong>，高级调度负责「进入内存」，中级调度负责「在内存与外存间对换」，低级调度负责「占用 CPU」。</p>
+  <p>③ 高级调度与中级调度都涉及<strong>内存</strong>，只有低级调度涉及<strong>处理机</strong>的真正分配。</p>
+</div>
+
+<h2>3. 关于调度的几点重要辨析</h2>
+
+<h3>3.1 作业调度 ≠ 进程调度</h3>
+
+<ul>
+  <li><strong>作业调度</strong>面向的是「作业」，为作业创建进程、分配内存，属于<strong>高级调度</strong>，是「粗粒度」的。</li>
+  <li><strong>进程调度</strong>面向的是「进程」，为进程分配处理机，属于<strong>低级调度</strong>，是「细粒度」的。</li>
+  <li>一个作业被作业调度选中后创建的进程，还要经过多次进程调度才能真正运行；也就是说，<strong>作业调度为进程调度提供「候选者」</strong>。</li>
+</ul>
+
+<h3>3.2 只有两级 / 一级调度的系统</h3>
+
+<p>并非所有系统都有三级调度。例如：</p>
+
+<ul>
+  <li>不含对换功能的<strong>批处理系统</strong>：通常只有作业调度 + 进程调度两级。</li>
+  <li><strong>分时系统</strong>：为使用户能及时交互，一般不采用作业调度（或非常弱化），而以进程调度为主，往往只有一级调度。</li>
+  <li>不含内存对换的系统：没有中级调度。</li>
+</ul>
+
+<div class="blk warn">
+  <div class="blk__label">高频陷阱</div>
+  <p>题目常说「××调度决定多道程序度」——答<strong>高级（作业）调度</strong>；说「××调度是离处理机最近、频率最高的一级」——答<strong>低级（进程）调度</strong>；说「××调度负责进程在内存与外存之间对换」——答<strong>中级调度</strong>。三个别名务必能对应上。</p>
+</div>
+
+<div class="scene" data-scene="sched-levels"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>4. 本节小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>三级调度</strong>：高（作业/长程）、中（内存/对换）、低（进程/短程）。</p>
+  <p><strong>对象</strong>：高级对作业、中级对进程、低级对进程/线程。</p>
+  <p><strong>频率</strong>：低级最高、中级居中、高级最低。</p>
+  <p><strong>口诀</strong>：「高进内存、中对换、低上 CPU」，或者记「作业 → 内存 → 处理机」。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「决定系统中多道程序度的调度是」→ 答<strong>高级（作业）调度</strong>。</p>
+  <p>② 问「发生频率最高的调度是」→ 答<strong>低级（进程）调度</strong>。</p>
+  <p>③ 问「把某个进程从外存调入内存执行的调度是」→ 答<strong>中级调度（对换）</strong>。</p>
+  <p>④ 给出四个别名让配对：长程调度—作业调度、短程调度—进程调度、中级调度—内存调度/对换，要能一一对应。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>高级调度又称作业调度，其主要任务是按一定的原则从外存上处于后备状态的作业中挑选一个或多个作业，给它们分配内存、输入/输出设备等必要的资源，并建立相应的进程，以使它们获得竞争处理机的权利；中级调度又称内存调度，其作用是提高内存利用率和系统吞吐量；低级调度又称进程调度，其主要任务是按照某种方法和策略从就绪队列中选取一个进程，将处理机分配给它。</p>
+</div>
+
+<p>完成下方选择题后，进入下一节 <strong>2.2.2 进程调度的时机、切换与过程、方式</strong>。</p>

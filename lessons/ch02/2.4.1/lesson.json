@@ -1,0 +1,17 @@
+{
+  "id": "2.4.1",
+  "chapter": "ch02",
+  "order": 25,
+  "title": "死锁的概念",
+  "subtitle": "定义 · 四个必要条件 · 与饥饿之别",
+  "tags": [
+    "概念",
+    "高频"
+  ],
+  "difficulty": "提高",
+  "minutes": 26,
+  "exam": "死锁的定义；产生死锁的四个必要条件；死锁与饥饿的区别",
+  "scenes": [
+    "deadlock-intro"
+  ]
+}

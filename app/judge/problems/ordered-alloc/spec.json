@@ -1,0 +1,74 @@
+{
+  "id": "ordered-alloc",
+  "title": "资源有序分配法合规检查（找出违反递增申请顺序的进程）",
+  "kind": "deterministic",
+  "entry": "solve",
+  "arg_names": ["rank", "held", "request"],
+  "compare": "exact",
+  "tol": 1e-6,
+  "cases": [
+    {
+      "name": "用例1：全部合法，无需调整（[]）",
+      "input": {
+        "rank": ["printer", "scanner", "tape"],
+        "held": [[], ["printer"], ["scanner", "printer"]],
+        "request": [["tape"], ["scanner"], ["scanner"]]
+      },
+      "expected": []
+    },
+    {
+      "name": "用例2：持 2 号又申请 1 号，违规（[0]）",
+      "input": {
+        "rank": ["printer", "scanner", "tape"],
+        "held": [["scanner"], []],
+        "request": [["printer"], ["printer"]]
+      },
+      "expected": [0]
+    },
+    {
+      "name": "用例3：空手进程可申请任意编号（[]）",
+      "input": {
+        "rank": ["printer", "scanner", "tape"],
+        "held": [[], [], []],
+        "request": [["tape"], ["scanner"], ["printer"]]
+      },
+      "expected": []
+    },
+    {
+      "name": "用例4：两个进程回头申请，下标升序（[1,3]）",
+      "input": {
+        "rank": ["printer", "scanner", "tape", "plotter"],
+        "held": [["printer"], ["tape"], ["printer", "scanner"], ["scanner"]],
+        "request": [["scanner"], ["scanner"], ["tape"], ["printer"]]
+      },
+      "expected": [1, 3]
+    },
+    {
+      "name": "用例5：同编号重复申请合法，不要写成小于等于（[]）",
+      "input": {
+        "rank": ["printer", "scanner", "tape"],
+        "held": [["scanner"], ["scanner", "scanner"]],
+        "request": [["scanner"], ["scanner"]]
+      },
+      "expected": []
+    },
+    {
+      "name": "用例6：持最高号申请最低号，两者都违规（[0,1]）",
+      "input": {
+        "rank": ["printer", "scanner", "tape", "plotter"],
+        "held": [["plotter"], ["tape"]],
+        "request": [["printer"], ["printer"]]
+      },
+      "expected": [0, 1]
+    },
+    {
+      "name": "用例7：只有一个进程违规（[2]）",
+      "input": {
+        "rank": ["printer", "scanner", "tape"],
+        "held": [[], ["printer"], ["scanner", "tape"]],
+        "request": [["tape"], ["scanner"], ["printer"]]
+      },
+      "expected": [2]
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "在记录型信号量中，若其 value 值小于 0，则该 value 的绝对值表示（　）。",
+      "options": [
+        "当前可用的资源数量",
+        "等待队列中被阻塞的进程数量",
+        "已获得该资源的进程数量",
+        "系统中允许的最大进程数量"
+      ],
+      "answer": 1,
+      "explain": "记录型信号量中，<code>value &gt; 0</code> 时表示<strong>可用资源数</strong>；<code>value &lt; 0</code> 时表示<strong>等待队列中被阻塞的进程数</strong>（值为 <code>-n</code> 即有 n 个进程在等待）。故选 B。"
+    },
+    {
+      "id": "q2",
+      "stem": "下列同步机制中，能使进程在等待资源时<strong>主动让出处理机</strong>、满足让权等待准则的是（　）。",
+      "options": [
+        "整型信号量",
+        "记录型信号量",
+        "单标志变量法",
+        "TestAndSet 指令"
+      ],
+      "answer": 1,
+      "explain": "整型信号量用 <code>while(S&lt;=0);</code> 忙等，不满足让权等待；单标志法和 TestAndSet 同样是忙等。<strong>记录型信号量</strong>在资源不足时调用 <code>block</code> 使进程阻塞、让出处理机，满足让权等待，故选 B。"
+    },
+    {
+      "id": "q3",
+      "stem": "用信号量实现临界区<strong>互斥</strong>时，互斥信号量 mutex 的初值应设为（　）。",
+      "options": [
+        "0",
+        "1",
+        "-1",
+        "临界资源的数量"
+      ],
+      "answer": 1,
+      "explain": "互斥要求同一时刻只允许一个进程进入临界区，故信号量<strong>初值为 1</strong>（表示只有一个临界资源）。若初值为 0，第一个进程执行 P 就会被阻塞，谁都进不去。故选 B。"
+    },
+    {
+      "id": "q4",
+      "stem": "用信号量实现两个进程的<strong>同步</strong>（要求 A 必须在 B 之前执行），则同步信号量的初值应设为（　）。",
+      "options": [
+        "0",
+        "1",
+        "2",
+        "-1"
+      ],
+      "answer": 0,
+      "explain": "同步信号量初值为 <strong>0</strong>：A 执行完调用 V 使其加为 1，B 执行 P 才能成功；若 A 尚未执行，B 的 P 会使其减为 -1 并阻塞，从而保证先后次序。故选 A。"
+    },
+    {
+      "id": "q5",
+      "stem": "用信号量实现进程<strong>互斥</strong>时，关于 P、V 操作，下列叙述中<strong>正确</strong>的是（　）。",
+      "options": [
+        "P、V 操作必须分别位于两个不同的进程中",
+        "P、V 操作必须在同一个进程内成对出现",
+        "可以只执行 P 操作而不执行 V 操作",
+        "V 操作必须写在 P 操作之前"
+      ],
+      "answer": 1,
+      "explain": "互斥信号量用于保护临界区，同一进程进入时 P、退出时 V，<strong>P、V 在同一个进程内成对出现</strong>，B 正确、A 错误。只 P 不 V 会使其它进程永远阻塞（死锁），C 错误；V 应在临界区之后，D 错误。故选 B。"
+    },
+    {
+      "id": "q6",
+      "stem": "在记录型信号量的 <code>wait(S)</code> 原语中，进程调用 <code>block</code> 自我阻塞的条件是（　）。",
+      "options": [
+        "S-&gt;value &gt; 0",
+        "S-&gt;value &ge; 0",
+        "S-&gt;value &lt; 0",
+        "S-&gt;value &le; 0"
+      ],
+      "answer": 2,
+      "explain": "<code>wait</code> 先执行 <code>S-&gt;value--</code>，若减 1 后 <code>S-&gt;value &lt; 0</code>，说明本次申请前已无可用资源，进程<strong>自我阻塞</strong>并挂到等待队列；与之对应，<code>signal</code> 中 <code>S-&gt;value++</code> 后若 <code>S-&gt;value &le; 0</code> 则唤醒一个等待进程。故选 C。"
+    },
+    {
+      "id": "q7",
+      "stem": "下列关于原语的叙述中，<strong>正确</strong>的是（　）。",
+      "options": [
+        "原语是一种可以被中断的执行过程",
+        "原语在执行过程中不可被中断，P 操作和 V 操作都是原语",
+        "原语只能由用户进程直接调用",
+        "原语执行时处理机一定处于用户态"
+      ],
+      "answer": 1,
+      "explain": "<strong>原语</strong>是指执行过程中<strong>不可被中断</strong>的操作，通常由若干条机器指令构成并通过关中断来保证其原子性，<strong>P、V 操作都是原语</strong>，B 正确。原语不可被中断，A 错误；原语一般由内核提供、在内核态执行，C、D 错误。故选 B。"
+    },
+    {
+      "id": "q8",
+      "stem": "下列关于信号量的叙述中，<strong>错误</strong>的是（　）。",
+      "options": [
+        "信号量的值只能通过 P、V 原语来改变",
+        "整型信号量在资源不足时会发生忙等待",
+        "记录型信号量中 value &gt; 0 表示当前可用的资源数",
+        "同步信号量与互斥信号量的初值都应当设为 1"
+      ],
+      "answer": 3,
+      "explain": "互斥信号量初值为 1，而<strong>同步信号量初值为 0</strong>，二者不同，D 错误。其余叙述均正确：信号量只能由 P、V 访问（A）；整型信号量会忙等（B）；记录型信号量中正值表示可用资源数（C）。故选 D。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "信号量机制：用 PV 实现临界区互斥",
+      "prompt": "<p>本题用多线程模拟多个进程<strong>并发</strong>对一个共享计数器执行累加，要求你使用<strong>信号量（PV 操作）</strong>实现临界区互斥，保证累加过程中不发生「丢失更新」，且同一时刻临界区内只有一个进程。</p><p>判题环境为你提供对象 <code>S</code>，含以下接口：</p><ul><li><code>S.cfg</code>：配置字典，含 <code>n_procs</code>（进程数）与 <code>incs_per_proc</code>（每进程累加次数）；</li><li><code>S.sem(initial, name)</code>：创建一个信号量并返回；</li><li><code>S.P(sem)</code> / <code>S.V(sem)</code>：P / V 原语；</li><li><code>S.counter(initial, name)</code>：创建<strong>非原子</strong>的共享计数器，支持 <code>.inc()</code> / <code>.dec()</code> / <code>.read()</code>；</li><li><code>S.enter(label)</code> / <code>S.exit(label)</code>：标注进入 / 退出名为 <code>label</code> 的临界区（判题据此检查互斥）；</li><li><code>S.spawn(fn, *args)</code>：启动一个线程（函数返回后自动汇合）；</li><li><code>S.sleep(ms)</code>：休眠若干毫秒。</li></ul><p>请实现函数 <code>run(S)</code>：创建互斥信号量 <code>mutex</code>（初值 1），创建共享计数器 <code>count</code>，再为每个进程启动一个线程，在线程里循环对 <code>count</code> 执行 <code>inc()</code>，并用 P/V 把「加计数」这段临界区保护起来。</p>",
+      "c_reference": "#include <pthread.h>\n#include <semaphore.h>\n\n#define N_PROCS 4\n#define INCS    120\n\nsem_t mutex;          /* 互斥信号量，初值 1 */\nvolatile int count = 0;\n\nvoid *proc(void *arg) {\n    for (int i = 0; i < INCS; i++) {\n        sem_wait(&mutex);   /* P(mutex)：进入区 */\n        count = count + 1;  /* 临界区：对共享变量累加 */\n        sem_post(&mutex);   /* V(mutex)：退出区 */\n    }\n    return NULL;\n}\n\nint main(void) {\n    sem_init(&mutex, 0, 1);\n    pthread_t tid[N_PROCS];\n    for (int i = 0; i < N_PROCS; i++)\n        pthread_create(&tid[i], NULL, proc, NULL);\n    for (int i = 0; i < N_PROCS; i++)\n        pthread_join(tid[i], NULL);\n    sem_destroy(&mutex);\n    return 0;\n}",
+      "python_reference": "def run(S):\n    np = int(S.cfg[\"n_procs\"])\n    incs = int(S.cfg[\"incs_per_proc\"])\n\n    mutex = S.sem(1, \"mutex\")      # 互斥信号量：保证临界区同一时刻仅一个进程\n    count = S.counter(0, \"count\")  # 非原子的共享计数器，缺互斥即暴露丢失更新\n\n    def proc(pid):\n        for _ in range(incs):\n            S.P(mutex)             # 进入区：申请进入临界区\n            S.enter(\"cs\")          # 标注进入临界区（供判题校验互斥）\n            count.inc()            # 临界区：对共享变量执行 count++\n            S.exit(\"cs\")           # 标注离开临界区\n            S.V(mutex)             # 退出区：释放临界区\n\n    for i in range(np):\n        S.spawn(proc, i)",
+      "starter_python": "def run(S):\n    np = int(S.cfg[\"n_procs\"])\n    incs = int(S.cfg[\"incs_per_proc\"])\n\n    # TODO: 创建互斥信号量 mutex（初值 1）与非原子共享计数器 count\n    # mutex = S.sem(____, \"mutex\")\n    # count = S.counter(____, \"count\")\n\n    def proc(pid):\n        for _ in range(incs):\n            # TODO: 进入区 P(mutex)；用 S.enter(\"cs\") 标注进入临界区；\n            #       count.inc() 执行临界区操作；S.exit(\"cs\") 标注离开；V(mutex) 退出。\n            pass\n\n    for i in range(np):\n        S.spawn(proc, i)",
+      "judge_problem_id": "semaphore-basic",
+      "hints": [
+        "互斥信号量初值应为 1：在 S.sem(1, \"mutex\") 中创建。",
+        "每个线程的每次累加都要「先 P 后 V」，把 count.inc() 这段临界区包在中间，且不能遗漏 V。",
+        "用 S.enter(\"cs\") 与 S.exit(\"cs\") 把临界区标注出来，判题会据此检测是否有两个进程同时在 cs 区内。",
+        "务必用 S.spawn(proc, i) 为每个进程启动线程，函数不要手动 join，判题框架会自动汇合。"
+      ]
+    }
+  ]
+}

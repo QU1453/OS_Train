@@ -1,0 +1,150 @@
+<h2>1. 内核态与用户态</h2>
+
+<p>CPU 有两种运行状态：<strong>内核态（管态 / 核心态）</strong>与<strong>用户态（目态）</strong>。区分状态的目的是<strong>保护操作系统</strong>，防止用户程序执行危险指令、破坏系统内核。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>内核态</strong>：可执行<strong>特权指令</strong>，可访问所有寄存器和全部存储空间，操作系统内核运行在此状态。<br><strong>用户态</strong>：只能执行<strong>非特权指令</strong>，只能访问自己的地址空间，用户程序运行在此状态。</p>
+</div>
+<div class="scene" data-scene="kernel-mode"></div>
+<div class="blk key">
+  <div class="blk__label">关键结论：两种状态如何切换（高频）</div>
+  <p><strong>用户态 → 内核态</strong>：只能由<strong>中断或异常</strong>（含系统调用引起的<strong>陷入 trap</strong>）触发，由<strong>硬件自动完成</strong>，是一条隐指令，<strong>不是</strong>特权指令。<br><strong>内核态 → 用户态</strong>：由操作系统执行一条<strong>特权指令</strong>，修改程序状态字寄存器 <code>PSW</code> 的标志位完成。</p>
+</div>
+
+<h3>1.1 特权指令与非特权指令</h3>
+
+<table class="tbl">
+  <thead>
+    <tr><th>类型</th><th>含义</th><th>典型举例</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>特权指令</strong></td>
+      <td>不允许用户程序使用，只能在内核态执行</td>
+      <td>I/O 指令、开/关中断、清内存、置时钟、修改 PSW、设置中断屏蔽字</td>
+    </tr>
+    <tr>
+      <td><strong>非特权指令</strong></td>
+      <td>用户程序可执行的一般指令</td>
+      <td>算术/逻辑运算、取数、访存、转移指令，以及<strong>陷入指令 trap</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>判断一条指令是否「特权」，看它<strong>是否可能危及系统安全</strong>。特别注意：<strong>陷入指令（trap / 访管指令）不是特权指令</strong>——系统调用恰恰需要用户在<strong>用户态</strong>下主动发起。</p>
+</div>
+
+<h2>2. 中断与异常</h2>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p><strong>中断（含异常）是让操作系统内核夺回 CPU 使用权的唯一途径</strong>，也是「用户态 → 内核态」转换的根本机制。</p>
+</div>
+
+<table class="tbl">
+  <thead>
+    <tr><th>类别</th><th>来源</th><th>与当前指令的关系</th><th>举例</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>外中断（中断）</strong></td>
+      <td>CPU 外部</td>
+      <td>无关</td>
+      <td>时钟中断、I/O 完成中断、键盘输入</td>
+    </tr>
+    <tr>
+      <td><strong>内中断（异常）</strong></td>
+      <td>CPU 内部</td>
+      <td>有关</td>
+      <td>非法操作码、地址越界、算术溢出、缺页、<strong>陷入（trap）</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>「外时钟、内异常」</strong>：与当前指令<strong>无关</strong>、来自 <strong>CPU 外部</strong>的称中断；与当前指令<strong>有关</strong>、来自 <strong>CPU 内部</strong>的称异常。外中断又可分为可屏蔽中断与不可屏蔽中断。</p>
+</div>
+
+<h3>2.1 中断处理过程</h3>
+
+<p>中断响应由硬件与软件配合完成，其中<strong>硬件自动完成</strong>的部分称为<strong>中断隐指令</strong>（并非指令系统中真正的指令）：</p>
+
+<ol>
+  <li><strong>关中断</strong>：硬件自动关闭中断，保证后续保存现场不被新中断打断；</li>
+  <li><strong>保存断点</strong>：把原程序的<strong>下一条指令地址（PC）</strong>保存到栈或指定单元；</li>
+  <li><strong>形成中断服务程序入口地址</strong>：硬件将中断向量送入 PC，转去执行中断服务程序。</li>
+</ol>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>「<strong>保存断点</strong>」「<strong>关中断</strong>」「<strong>形成中断服务程序入口</strong>」由<strong>硬件</strong>自动完成（中断隐指令）；「<strong>保存现场</strong>（通用寄存器）」由<strong>中断服务程序</strong>（软件）完成，不要混淆。</p>
+</div>
+
+<h2>3. 系统调用</h2>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>系统调用</strong>是操作系统提供给应用程序（程序员）使用的接口，是应用程序<strong>请求操作系统内核服务</strong>的桥梁，属于<strong>程序接口</strong>（而非命令接口）。</p>
+</div>
+
+<h3>3.1 系统调用的执行过程</h3>
+
+<ol>
+  <li><strong>传递参数</strong>：用户程序把系统调用所需的参数放入寄存器或内存（栈）中；</li>
+  <li><strong>执行陷入指令（trap）</strong>：在<strong>用户态</strong>执行陷入指令，产生内部中断，CPU 由<strong>用户态转为内核态</strong>；</li>
+  <li><strong>执行系统调用服务程序</strong>：CPU 在内核态执行相应的内核服务程序，完成具体功能；</li>
+  <li><strong>返回用户态</strong>：内核执行一条特权指令（修改 PSW），使 CPU 回到用户态，并把结果返回给用户程序。</li>
+</ol>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>① <strong>系统调用的服务程序一定运行在内核态</strong>；② 发起系统调用的<strong>陷入指令运行在用户态</strong>；③ 一次系统调用包含「用户态 → 内核态 → 用户态」的完整转换。</p>
+</div>
+
+<h3>3.2 系统调用与库函数的区别</h3>
+
+<table class="tbl">
+  <thead>
+    <tr><th>对比项</th><th>系统调用</th><th>库函数</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>提供者</td><td>操作系统内核</td><td>语言（如 C 标准库）或第三方</td></tr>
+    <tr><td>运行状态</td><td>内核态</td><td>用户态</td></tr>
+    <tr><td>与内核关系</td><td>直接请求内核服务</td><td>有的<strong>封装</strong>了系统调用，有的<strong>完全不涉及</strong></td></tr>
+    <tr><td>举例</td><td>read、write、fork、open</td><td>printf（底层封装 write）、sqrt（不涉及）</td></tr>
+  </tbody>
+</table>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>并非所有库函数都会引起系统调用。例如 <code>printf</code> 底层可能调用 <code>write</code>，但 <code>sqrt</code>、<code>abs</code> 等数学函数只是普通计算，<strong>不需要系统调用、不进入内核态</strong>。</p>
+</div>
+
+<h2>4. 内核与程序的运行环境</h2>
+<div class="blk key">
+  <div class="blk__label">内核与运行环境</div>
+  <p>内核（含时钟管理、中断处理、原语等）运行在<strong>内核态</strong>，用户程序运行在<strong>用户态</strong>；用户程序通过<strong>系统调用</strong>请求内核服务，内核通过<strong>中断/异常</strong>夺回 CPU 控制权。</p>
+</div>
+
+<h2>5. 本节小结与真题问法</h2>
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>两态</strong>：内核态、用户态。<br><strong>转换</strong>：用→核靠中断/异常（硬件自动），核→用靠特权指令（改 PSW）。<br><strong>中断</strong>：外中断与当前指令无关，内中断（异常）与当前指令有关。<br><strong>系统调用四步</strong>：传参 → 陷入指令 → 内核态服务程序 → 返回用户态。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「CPU 从用户态转为内核态的原因」→ 答<strong>发生了中断或异常（含系统调用陷入）</strong>。<br>② 问「用户态到内核态的转换由什么完成」→ 由<strong>硬件</strong>完成（中断隐指令），<strong>不是</strong>特权指令。</p>
+  <p>③ 给一串指令判断哪些是特权指令 → 「I/O、置时钟、改 PSW、关中断」是特权，<strong>trap 不是</strong>。<br>④ 问「系统调用与库函数的关系」→ 系统调用在内核态；库函数在用户态，不一定涉及系统调用。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>系统调用是操作系统提供给应用程序使用的接口，是应用程序请求操作系统内核服务的桥梁；用户程序在用户态下执行陷入指令（trap），由此引起一个内部中断，使 CPU 由用户态进入内核态。</p>
+</div>
+
+<p>完成下方选择题后，进入下一节 <strong>1.4 操作系统的结构</strong>。</p>

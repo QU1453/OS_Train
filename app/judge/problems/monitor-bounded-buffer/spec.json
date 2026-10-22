@@ -1,0 +1,51 @@
+{
+  "id": "monitor-bounded-buffer",
+  "title": "管程实现有界缓冲区",
+  "kind": "deterministic",
+  "entry": "solve",
+  "arg_names": ["ops", "capacity"],
+  "compare": "exact",
+  "tol": 1e-6,
+  "cases": [
+    {
+      "name": "用例1：生产满缓冲后消费触发唤醒",
+      "input": {
+        "capacity": 2,
+        "ops": [["produce", "A"], ["produce", "B"], ["produce", "C"], ["consume"], ["consume"], ["consume"]]
+      },
+      "expected": {"consumed": ["A", "B", "C"], "buffer": [], "waited": 0}
+    },
+    {
+      "name": "用例2：容量为1，生产过多导致生产者等待（waited=1）",
+      "input": {
+        "capacity": 1,
+        "ops": [["produce", "A"], ["produce", "B"], ["produce", "C"], ["consume"]]
+      },
+      "expected": {"consumed": ["A"], "buffer": ["B"], "waited": 1}
+    },
+    {
+      "name": "用例3：空缓冲消费使消费者等待，后续生产唤醒",
+      "input": {
+        "capacity": 2,
+        "ops": [["consume"], ["consume"], ["produce", "X"], ["produce", "Y"]]
+      },
+      "expected": {"consumed": ["X", "Y"], "buffer": [], "waited": 0}
+    },
+    {
+      "name": "用例4：容量3，多次生产后单次消费，仍留生产者等待（waited=1）",
+      "input": {
+        "capacity": 3,
+        "ops": [["produce", 1], ["produce", 2], ["produce", 3], ["produce", 4], ["produce", 5], ["consume"]]
+      },
+      "expected": {"consumed": [1], "buffer": [2, 3, 4], "waited": 1}
+    },
+    {
+      "name": "用例5：生产者/消费者交替等待与唤醒（waited=1）",
+      "input": {
+        "capacity": 2,
+        "ops": [["consume"], ["produce", "A"], ["produce", "B"], ["produce", "C"], ["consume"], ["consume"], ["consume"]]
+      },
+      "expected": {"consumed": ["A", "B", "C"], "buffer": [], "waited": 1}
+    }
+  ]
+}

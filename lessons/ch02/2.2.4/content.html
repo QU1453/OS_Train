@@ -1,0 +1,156 @@
+<h2>1. 调度算法的分类</h2>
+
+<p>进程调度的核心任务是从<strong>就绪队列</strong>中按某种策略选择一个进程，把 CPU 分配给它。按「是否允许抢占」，调度算法分为两类：</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>非抢占式（非剥夺式）</strong>：一旦把 CPU 分配给某进程，就让它<strong>一直运行到完成或主动阻塞</strong>，中途绝不因「来了更合适的进程」而收回 CPU。<br><strong>抢占式（剥夺式）</strong>：正在运行的进程可被<strong>优先级更高</strong>或<strong>更紧迫</strong>的进程剥夺 CPU，被剥夺者回到就绪队列。</p>
+</div>
+
+<p>本节介绍六种经典算法：<strong>FCFS、SJF/SPF、HRRN、优先级调度、时间片轮转、多级反馈队列</strong>。</p>
+
+<h2>2. 先来先服务 FCFS</h2>
+
+<p><strong>FCFS（First Come First Served）</strong>：按进程<strong>进入就绪队列的先后次序</strong>（等价地，按作业到达的先后）依次调度，<strong>非抢占式</strong>。谁先到，谁先服务。</p>
+
+<ul>
+  <li><strong>优点</strong>：公平、实现简单，不会使进程长期得不到服务（<strong>不会饥饿</strong>）。</li>
+  <li><strong>缺点</strong>：对<strong>短作业不利</strong>。若一个长作业先到，后面大量短作业都要排在它后面等待，导致平均周转时间、平均带权周转时间<strong>偏大</strong>（出现「护航效应」）。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>FCFS 有利于 <strong>CPU 繁忙型</strong>作业，不利于 <strong>I/O 繁忙型</strong>作业，也不利于短作业。它是<strong>非抢占式</strong>，且「排队顺序 = 到达顺序」。</p>
+</div>
+
+<h2>3. 短作业优先 SJF / SPF</h2>
+
+<p><strong>SJF（Shortest Job First）</strong>，又叫<strong>短进程优先 SPF</strong>：每次从就绪队列中选择<strong>运行时间最短</strong>的作业（进程）投入运行。做题时注意区分两种版本：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>版本</th><th>规则</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>非抢占式 SJF</strong></td><td>当前进程运行期间，即使来了更短的作业，也不打断；<strong>只有当当前进程完成（或阻塞）后</strong>，才在<strong>当前已到达</strong>的作业中选最短者。</td></tr>
+    <tr><td><strong>抢占式 SJF（又称 SRTN，最短剩余时间优先）</strong></td><td>每当有新作业到达，就比较「新作业的服务时间」与「当前进程的<strong>剩余运行时间</strong>」，若新作业更短，则<strong>立即抢占</strong> CPU。</td></tr>
+  </tbody>
+</table>
+
+<ul>
+  <li><strong>优点</strong>：在所有作业同时到达（且不考虑抢占）时，SJF 能得到<strong>最小的平均等待时间和平均周转时间</strong>，是理论上最优的非抢占算法。</li>
+  <li><strong>缺点</strong>：对<strong>长作业不利</strong>，可能导致长作业长期得不到调度（<strong>饥饿</strong>）；且「运行时间」往往无法准确预知。</li>
+</ul>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>① SJF 的最优性有<strong>前提</strong>：所有作业同时到达。若作业陆续到达，SJF 不一定最优。<br>② 判断「新到的短作业能否插队」时，一定要看是<strong>非抢占</strong>还是<strong>抢占</strong>式：非抢占式要等当前进程运行完；抢占式（SRTN）比较的是<strong>剩余时间</strong>。</p>
+</div>
+
+<h2>4. 高响应比优先 HRRN</h2>
+
+<p><strong>HRRN（Highest Response Ratio Next）</strong>：每次调度时计算各就绪作业的<strong>响应比</strong>，选响应比<strong>最高</strong>者运行。响应比定义为：</p>
+
+<pre class="formula">响应比 R = (等待时间 + 要求服务时间) / 要求服务时间 = 1 + 等待时间 / 要求服务时间</pre>
+
+<ul>
+  <li>等待时间相同时，<strong>服务时间越短，响应比越高</strong> → 照顾短作业；</li>
+  <li>服务时间相同时，<strong>等待时间越长，响应比越高</strong> → 兼顾长作业，避免其饥饿。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>HRRN 是<strong>非抢占式</strong>算法，它综合了 FCFS（看等待时间）与 SJF（看服务时间）的优点：既照顾短作业，又不让长作业饿死，是一种<strong>折中且较优</strong>的算法。其代价是每次调度都要<strong>重新计算响应比</strong>，有一定开销。</p>
+</div>
+
+<div class="blk memo">
+  <div class="blk__label">并列如何取舍</div>
+  <p>做题时若响应比相同，通常取<strong>服务时间较短者</strong>；若仍并列，取<strong>到达较早（或编号靠前）</strong>者。可用下面的动画演示一步步观察 FCFS / SJF / HRRN 的调度差别：</p>
+</div>
+
+<div class="scene" data-scene="sched-algorithms"></div>
+
+<h2>5. 优先级调度</h2>
+
+<p>给每个进程分配一个<strong>优先级</strong>，调度时选择<strong>优先级最高</strong>的进程运行。同样分非抢占式与<strong>抢占式</strong>两种；抢占式下，一旦出现更高优先级的进程，立即剥夺当前进程的 CPU。</p>
+
+<ul>
+  <li><strong>优先级</strong>可以是静态的（创建时确定、不变）或动态的（随等待时间增长而提高，防止饥饿）；</li>
+  <li>优先级可分为「<strong>数大者优先</strong>」（如数字越大越优先）或「<strong>数小者优先</strong>」（如「0 为最高优先级」），做题务必看清题目约定；</li>
+  <li><strong>缺点</strong>：若采用固定优先级，低优先级进程可能长期得不到调度，产生<strong>饥饿</strong>。</li>
+</ul>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>「优先级」高低的数值方向<strong>完全取决于题目定义</strong>，不要想当然认为数值越大越优先。另外，通常<strong>系统进程</strong>优先级高于用户进程，<strong>I/O 繁忙型</strong>进程优先级常高于 CPU 繁忙型进程（以便尽早启动 I/O、提高并发度）。</p>
+</div>
+
+<h2>6. 时间片轮转 RR</h2>
+
+<p><strong>RR（Round Robin）</strong>：把就绪队列中的进程按 <strong>FCFS</strong> 排成队列，每次调度队首进程，让它运行一个<strong>时间片</strong>；时间片用完（或被阻塞）后，若未完成，则<strong>回到就绪队列队尾</strong>排队，再取新的队首运行。RR 是<strong>抢占式</strong>的（由时钟中断剥夺 CPU）。</p>
+
+<ul>
+  <li><strong>时间片大小的影响</strong>：时间片太大，RR 退化为 <strong>FCFS</strong>，响应时间变长；时间片太小，进程切换过于频繁，<strong>系统开销</strong>增大。因此时间片要取一个<strong>适中</strong>的值。</li>
+  <li><strong>优点</strong>：响应及时、公平，<strong>不会饥饿</strong>，非常适合<strong>分时/交互式</strong>系统。</li>
+  <li><strong>缺点</strong>：不区分任务紧急程度；若时间片过小，上下文切换开销大。</li>
+</ul>
+
+<div class="blk memo">
+  <div class="blk__label">RR 计算示例</div>
+  <p>三个进程 A、B、C 同时在 0 时刻到达，服务时间分别为 4、3、2，时间片 <strong>q = 1</strong>，采用 RR（时间片到则回队尾）：</p>
+  <p>执行顺序为：A(0-1) → B(1-2) → C(2-3) → A(3-4) → B(4-5) → C(5-6) → A(6-7) → B(7-8) → A(8-9)。<br>各进程完成时刻：C 在 6、B 在 8、A 在 9。可见「长作业」被反复放回队尾，完成得晚；这正是 RR 公平但不利于长作业的体现。</p>
+</div>
+
+<h2>7. 多级反馈队列</h2>
+
+<p><strong>多级反馈队列（Multilevel Feedback Queue）</strong>是综合前述算法优点的<strong>最通用</strong>调度算法，也是考试的重点。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义与规则</div>
+  <p>① 设置<strong>多个就绪队列</strong>，<strong>优先级从第 1 级逐级降低</strong>，各队列<strong>时间片逐级加倍</strong>（队列级别越低、时间片越长）。<br>② 新进程先进入<strong>第 1 级队列队尾</strong>，按 FCFS 排队，轮到它时运行一个该级时间片。<br>③ 若在该级时间片内完成，则撤离；若<strong>用完时间片仍未完成</strong>，则降到<strong>下一级队列队尾</strong>；若因 I/O 阻塞，则阻塞结束后仍回到<strong>原队列</strong>（有的教材设定回第 1 级）。<br>④ 只有<strong>高优先级队列为空</strong>时，才调度下一级队列中的进程；若运行过程中有<strong>更高优先级</strong>的进程到达，则<strong>立即抢占</strong>，当前进程放回原队列队尾。</p>
+</div>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：多级反馈队列的优点</div>
+  <p>① 对<strong>短作业友好</strong>：短作业在第 1 级时间片内即可完成，响应快；<br>② 对<strong>长作业也不饿死</strong>：长作业会逐级下降，最终获得越来越长的时间片；<br>③ 兼顾 <strong>I/O 繁忙型</strong>进程（常在第 1 级获得及时响应）与 <strong>CPU 繁忙型</strong>进程（下降后获得长时间片）；<br>④ 因此它<strong>兼顾了响应时间与系统效率</strong>，是较为理想的通用调度算法。</p>
+</div>
+
+<h2>8. 各算法对比与适用场景</h2>
+
+<table class="tbl">
+  <thead>
+    <tr><th>算法</th><th>是否抢占</th><th>选择依据</th><th>优点</th><th>缺点/易错</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>FCFS</strong></td><td>非抢占</td><td>到达先后</td><td>公平、简单、不饥饿</td><td>对短作业不利，平均周转时间可能偏大</td></tr>
+    <tr><td><strong>SJF / SPF</strong></td><td>非抢占 / 抢占(SRTN)</td><td>服务时间最短（抢占看剩余时间）</td><td>同时到达时平均等待/周转时间最优</td><td>长作业可能饥饿；运行时间难预知</td></tr>
+    <tr><td><strong>HRRN</strong></td><td>非抢占</td><td>响应比最高</td><td>兼顾长短作业，避免饥饿</td><td>每次需重算响应比，有开销</td></tr>
+    <tr><td><strong>优先级</strong></td><td>非抢占 / 抢占</td><td>优先级最高</td><td>可处理紧急任务</td><td>固定优先级可能导致低优先级饥饿</td></tr>
+    <tr><td><strong>时间片轮转 RR</strong></td><td>抢占</td><td>时间片到则回队尾</td><td>响应快、公平、不饥饿</td><td>时间片过小开销大、过大退化为 FCFS</td></tr>
+    <tr><td><strong>多级反馈队列</strong></td><td>抢占</td><td>多队列+变长时间片</td><td>兼顾响应与效率，综合最优</td><td>参数设置复杂</td></tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：谁「不公平/会饥饿」</div>
+  <p><strong>会导致饥饿</strong>的算法：<strong>SJF（短作业优先）、固定优先级调度</strong>。<br><strong>不会饥饿</strong>的算法：<strong>FCFS、HRRN、时间片轮转 RR、多级反馈队列</strong>。这是判断题的高频考点。</p>
+</div>
+
+<h2>9. 本节小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>先来先服务</strong>（排队）；<strong>短作业优先</strong>（挑短的、会饿死长的）；<strong>高响应比</strong>（长短兼顾、不饿）；<strong>时间片轮转</strong>（公平轮转、分时首选）；<strong>多级反馈</strong>（综合最优、考试最爱）。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 给出作业表（到达时间、服务时间），要求写出某算法的<strong>执行顺序</strong>并计算<strong>平均周转时间、平均带权周转时间</strong>。<br>② 比较 FCFS 与 SJF：SJF 平均周转时间通常更短，但可能使长作业饥饿。<br>③ 问「哪种算法能得到最小的平均等待时间」→ 在<strong>同时到达</strong>的前提下，<strong>SJF</strong>。<br>④ 问「分时系统最常用的算法」→ <strong>时间片轮转 RR</strong>。<br>⑤ 问「综合性能最好、兼顾长短作业的算法」→ <strong>多级反馈队列</strong>。<br>⑥ 判断「时间片越大越好」→ 错误，时间片过大 RR 退化为 FCFS，过小则切换开销大。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>先来先服务算法每次从就绪队列选择最先进入的进程；短作业优先算法选择运行时间最短的进程，在所有作业同时到达时可以获得最小的平均等待时间；高响应比优先算法综合了等待时间与服务时间；时间片轮转算法按时间片轮流调度，适用于分时系统；多级反馈队列算法是综合了上述算法优点的调度算法。</p>
+</div>
+
+<p>完成下方选择题与代码大题后，本章调度部分即告一段落。</p>

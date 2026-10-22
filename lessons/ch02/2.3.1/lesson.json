@@ -1,0 +1,16 @@
+{
+  "id": "2.3.1",
+  "chapter": "ch02",
+  "order": 17,
+  "title": "同步与互斥的基本概念",
+  "subtitle": "临界资源 · 同步机制四条准则",
+  "tags": [
+    "概念"
+  ],
+  "difficulty": "基础",
+  "minutes": 22,
+  "exam": "临界资源与临界区；同步与互斥；同步机制应遵循的四条准则",
+  "scenes": [
+    "crit-section"
+  ]
+}

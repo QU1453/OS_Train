@@ -1,0 +1,173 @@
+<h2>1. 为什么引入线程</h2>
+
+<p>传统的进程具有「<strong>资源分配单位</strong>」和「<strong>调度单位</strong>」的双重身份。这带来一个矛盾：进程既是资源分配的基本单位，又是 CPU 调度的基本单位。当进行进程切换时，操作系统不仅要切换处理机现场，还要切换整个的地址空间与资源，<strong>开销很大</strong>。</p>
+
+<p>此外，许多应用本身就需要在一个进程中「同时」做几件事（例如一个字处理程序中，一个执行流负责接收键盘输入，另一个执行流负责拼写检查，还有一个负责自动保存）。若把它们都做成独立进程，则创建、撤销、切换的代价太高，且共享数据要借助进程通信。为此，操作系统引入了一个更轻量的执行单元——<strong>线程（Thread）</strong>。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>线程</strong>是进程中的一个<strong>执行单元（执行流）</strong>，是<strong>处理机调度</strong>的基本单位。引入线程后，<strong>进程只作为除 CPU 之外的系统资源的分配单元</strong>，<strong>线程则作为处理机的调度单元</strong>。一个进程可以包含多个线程，它们共享该进程所拥有的全部资源。</p>
+</div>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：两种「基本单位」的分工</div>
+  <p>引入线程后：<strong>进程是资源分配的基本单位，线程是处理机调度（执行）的基本单位</strong>。这一分工是历年选择题的必考点，务必记牢。</p>
+</div>
+
+<h2>2. 线程与进程的对比</h2>
+
+<table class="tbl">
+  <thead>
+    <tr><th>对比项</th><th>进程</th><th>线程</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>基本单位</td>
+      <td>资源分配的基本单位（CPU 除外）</td>
+      <td>处理机<strong>调度</strong>的基本单位</td>
+    </tr>
+    <tr>
+      <td>拥有资源</td>
+      <td>拥有独立的地址空间与系统资源</td>
+      <td>基本不拥有资源，只拥有运行必需的少量私有资源（如栈、寄存器、TCB）</td>
+    </tr>
+    <tr>
+      <td>并发性</td>
+      <td>进程之间可以并发</td>
+      <td>同一进程内的多个线程也可以并发，且并发粒度更细</td>
+    </tr>
+    <tr>
+      <td>切换开销</td>
+      <td>切换代价大（需切换地址空间、保存/恢复大量现场）</td>
+      <td>同一进程内线程切换代价小（不必切换地址空间）</td>
+    </tr>
+    <tr>
+      <td>独立性</td>
+      <td>不同进程相互独立，有各自的地址空间</td>
+      <td>同一进程内的线程<strong>共享</strong>地址空间和资源，独立性低</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">线程共享什么、私有什么</div>
+  <p><strong>共享</strong>（属于进程）：进程的<strong>地址空间、代码段、数据段（全局变量、堆）、打开的文件、I/O 设备</strong>等。<br><strong>私有</strong>（属于线程）：<strong>程序计数器 PC、通用寄存器组、栈（局部变量）、线程控制块 TCB、线程 ID、优先级</strong>等。由于共享地址空间，同一进程内线程之间的数据交换无需系统干预，速度快。</p>
+</div>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>① 「线程切换一定引起进程切换」是<strong>错的</strong>：<strong>同一进程内</strong>的线程切换<strong>不会</strong>引起进程切换；只有<strong>不同进程</strong>的线程之间切换，才可能引起进程切换。<br>② 说「线程不拥有任何资源」也<strong>不严谨</strong>：线程仍拥有运行不可缺少的私有资源（栈、寄存器、TCB 等）。<br>③ 同一进程内线程共享<strong>全局变量</strong>，但各自有<strong>独立的栈</strong>，所以局部变量不共享。</p>
+</div>
+
+<h3>2.1 线程为什么「轻」：与进程的联系</h3>
+
+<p>线程之所以被称为「轻型实体」，是因为它与所属进程存在以下联系：</p>
+
+<ul>
+  <li><strong>线程依附于进程</strong>：线程不能脱离进程独立存在，一个线程必然属于某个进程，撤销进程时其所有线程也随之被撤销；</li>
+  <li><strong>线程共享进程资源</strong>：同一进程的线程共享地址空间、全局数据、打开的文件与 I/O 设备，因此线程之间交换数据不需要经过内核；</li>
+  <li><strong>线程是处理机分配的单位</strong>：真正被 CPU 调度执行的是<strong>内核级线程</strong>；若进程只支持用户级线程，内核仍以<strong>进程</strong>为单位分配 CPU。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：线程切换为何更省</div>
+  <p>进程切换需要切换<strong>地址空间</strong>（更换页表、刷新快表 TLB 等），而同一进程内<strong>线程切换无需更换地址空间</strong>，只需保存/恢复少量私有现场（寄存器、PC、栈），因此<strong>开销远小于进程切换</strong>。这也是多线程能提高系统并发性能的重要原因。</p>
+</div>
+
+<p>但要注意：线程共享地址空间也带来风险——<strong>一个线程的非法操作（如野指针）可能破坏整个进程的数据</strong>，导致同一进程内其它线程一起崩溃；这是多线程编程必须谨慎处理的问题。</p>
+
+<h2>3. 线程的属性与状态</h2>
+
+<ul>
+  <li><strong>是轻型实体</strong>：线程同样有一个数据结构 TCB（线程控制块），用于记录线程标识、状态、现场等信息；</li>
+  <li><strong>共享进程资源</strong>：同一进程内所有线程共享该进程的地址空间和资源，线程间通信（通过全局变量等）无需系统调用；</li>
+  <li><strong>可并发执行</strong>：一个进程内的多个线程之间、不同进程的线程之间都可以并发执行；</li>
+  <li><strong>具有状态</strong>：线程也有<strong>就绪、阻塞、运行</strong>三种基本状态，与进程状态基本一致；由于线程是调度单位，其状态的转换是处理机调度的核心。</li>
+</ul>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p>线程「<strong>一私三共</strong>」：私有的记 <strong>PC、寄存器、栈、TCB</strong>；其余（地址空间、代码、全局数据、文件、设备）都<strong>共享</strong>。</p>
+</div>
+
+<h2>4. 线程的实现方式</h2>
+
+<p>线程既可以由<strong>用户级线程库</strong>（在用户空间）实现，也可以由<strong>操作系统内核</strong>实现。据此分为两类：</p>
+
+<h3>4.1 用户级线程（ULT）</h3>
+
+<p><strong>用户级线程（User-Level Thread）</strong>由用户空间的线程库（如 pthread 的某些实现）进行管理，操作系统内核<strong>意识不到线程的存在</strong>，内核仍然只把整个进程作为调度单位。</p>
+
+<ul>
+  <li><strong>优点</strong>：线程的创建、撤销、切换都在<strong>用户空间</strong>完成，<strong>不需要进入内核态</strong>，因此<strong>切换开销小、速度快</strong>；用户级线程的实现与操作系统平台无关。</li>
+  <li><strong>缺点</strong>：① 若一个线程执行了会导致阻塞的系统调用，内核会阻塞<strong>整个进程</strong>，从而该进程内其它线程也全部被阻塞；② 内核每次只把一个进程作为一个调度单位分配到 CPU，因此<strong>在多处理机上用户级线程也无法真正并行</strong>。</li>
+</ul>
+
+<h3>4.2 内核级线程（KLT）</h3>
+
+<p><strong>内核级线程（Kernel-Level Thread）</strong>由操作系统内核进行管理，内核<strong>能感知到线程的存在</strong>，并以线程为单位进行调度。</p>
+
+<ul>
+  <li><strong>优点</strong>：① 一个线程被阻塞时，内核可调度同进程中的其它线程继续运行，<strong>不会阻塞整个进程</strong>；② 在多处理机上，多个内核级线程可以<strong>真正并行</strong>执行。</li>
+  <li><strong>缺点</strong>：线程的创建、撤销、切换都需要<strong>进入内核态</strong>，由内核完成，<strong>开销较大</strong>；实现也更复杂。</li>
+</ul>
+
+<div class="blk key">
+  <div class="blk__label">关键结论：ULT vs KLT</div>
+  <p><strong>用户级线程</strong>：用户库管理，内核不可见，<strong>切换快、但阻塞会阻塞整个进程、无法利用多核并行</strong>。<br><strong>内核级线程</strong>：内核管理，内核可见，<strong>可并行、阻塞不影响他线程、但切换开销大</strong>。</p>
+</div>
+
+<h2>5. 多线程模型</h2>
+
+<p>用户级线程与内核级线程之间的映射关系，构成了三种多线程模型：</p>
+
+<table class="tbl">
+  <thead>
+    <tr><th>模型</th><th>映射关系</th><th>优点 / 缺点</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>多对一</strong></td>
+      <td>多个用户级线程映射到<strong>一个</strong>内核级线程</td>
+      <td>线程管理在用户空间，开销小；但<strong>一个线程阻塞会导致整个进程阻塞</strong>，且在多处理机上<strong>无法并行</strong></td>
+    </tr>
+    <tr>
+      <td><strong>一对一</strong></td>
+      <td>每个用户级线程映射到<strong>一个</strong>内核级线程</td>
+      <td>并发能力强，一个线程阻塞不影响其它线程，可利用多核；但<strong>每个线程都要内核支持，线程管理开销大</strong>，数量受限</td>
+    </tr>
+    <tr>
+      <td><strong>多对多</strong></td>
+      <td>n 个用户级线程映射到 m 个内核级线程（m &le; n）</td>
+      <td>综合前两者优点：既可支持大量线程，又能利用多核并行，且避免开销过大</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>① 「多对一」模型的致命缺点是<strong>一个线程阻塞会使整个进程阻塞</strong>，且<strong>无法在多处理机上并行</strong>；② 「多对多」模型中<strong>内核级线程数 m 一般小于等于用户级线程数 n</strong>；③ 不要混淆「多对一」与「一对一」的优缺点。</p>
+</div>
+
+<div class="scene" data-scene="thread-model"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>6. 本节小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>两种单位</strong>：进程是资源分配单位，线程是调度单位。<br><strong>共享私有</strong>：共享地址空间/全局数据/文件；私有 PC、寄存器、栈、TCB。<br><strong>两类线程</strong>：用户级（快、阻塞连累全进程、不并行）；内核级（可并行、阻塞不连累、开销大）。<br><strong>三种模型</strong>：多对一、一对一、多对多。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 问「引入线程后，处理机调度的基本单位是什么」→ 答<strong>线程</strong>（进程变为资源分配的基本单位）。<br>② 问「同一进程内线程切换是否引起进程切换」→ <strong>不会</strong>引起进程切换。<br>③ 问「同一进程内线程共享/私有哪些内容」→ 共享地址空间、全局变量、文件；私有栈、寄存器、PC、TCB。</p>
+  <p>④ 问「用户级线程的缺点」→ <strong>一个线程阻塞会导致整个进程阻塞，且不能利用多核并行</strong>。<br>⑤ 问「哪种多线程模型能兼顾并发与开销」→ <strong>多对多模型</strong>。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>线程是一个基本的 CPU 执行单元，也是程序执行流的最小单元。引入线程后，进程只作为除 CPU 之外的系统资源的分配单元，线程则作为处理机的调度单元。同一进程中的多个线程共享该进程所拥有的资源，但每个线程都有自己的栈和寄存器等私有资源。</p>
+</div>
+
+<p>完成下方选择题后，进入下一节 <strong>2.2.1 调度的概念与层次</strong>。</p>

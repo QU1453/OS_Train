@@ -1,0 +1,65 @@
+{
+  "id": "deadlock-detection",
+  "title": "死锁检测（资源分配图可完全化简）",
+  "kind": "deterministic",
+  "entry": "solve",
+  "arg_names": ["available", "allocation", "request"],
+  "compare": "exact",
+  "tol": 1e-6,
+  "cases": [
+    {
+      "name": "用例1：无死锁，全部进程可完成（[]）",
+      "input": {
+        "available": [1, 1],
+        "allocation": [[1, 0], [0, 1]],
+        "request": [[0, 0], [0, 0]]
+      },
+      "expected": []
+    },
+    {
+      "name": "用例2：两进程互相等待，全部死锁（[0,1]）",
+      "input": {
+        "available": [0, 0],
+        "allocation": [[1, 0], [0, 1]],
+        "request": [[0, 1], [1, 0]]
+      },
+      "expected": [0, 1]
+    },
+    {
+      "name": "用例3：三进程循环等待，全部死锁（[0,1,2]）",
+      "input": {
+        "available": [0, 0, 0],
+        "allocation": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+        "request": [[0, 1, 0], [0, 0, 1], [1, 0, 0]]
+      },
+      "expected": [0, 1, 2]
+    },
+    {
+      "name": "用例4：前两进程可完成，进程2死锁（[2]）",
+      "input": {
+        "available": [1, 0],
+        "allocation": [[1, 0], [0, 1], [0, 2]],
+        "request": [[0, 0], [1, 0], [0, 2]]
+      },
+      "expected": [2]
+    },
+    {
+      "name": "用例5：进程0可完成，进程1、2死锁（[1,2]）",
+      "input": {
+        "available": [1, 0],
+        "allocation": [[1, 0], [0, 1], [0, 1]],
+        "request": [[0, 0], [2, 1], [2, 1]]
+      },
+      "expected": [1, 2]
+    },
+    {
+      "name": "用例6：教材经典数据，可完全化简无死锁（[]）",
+      "input": {
+        "available": [0, 0, 0],
+        "allocation": [[0, 1, 0], [2, 0, 0], [3, 0, 3], [2, 1, 1], [0, 0, 2]],
+        "request": [[0, 0, 0], [2, 0, 2], [0, 0, 0], [1, 0, 0], [0, 0, 2]]
+      },
+      "expected": []
+    }
+  ]
+}

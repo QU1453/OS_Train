@@ -1,0 +1,102 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "设缓冲区容量为 n，生产者-消费者问题中互斥信号量 mutex、空闲缓冲区信号量 empty、产品信号量 full 的初值依次为（　）。",
+      "options": ["n、0、1", "0、n、1", "1、0、n", "n、1、0"],
+      "answer": 0,
+      "explain": "<strong>empty</strong> 表示空闲缓冲区数目，初始缓冲区全空，故初值为 <strong>n</strong>；<strong>full</strong> 表示产品数目，初始没有产品，故初值为 <strong>0</strong>；<strong>mutex</strong> 用于互斥访问缓冲区，初值为 <strong>1</strong>。故选 n、0、1。"
+    },
+    {
+      "id": "q2",
+      "stem": "在生产者-消费者问题中，关于生产者进程与消费者进程围绕缓冲区的相互关系，正确的说法是（　）。",
+      "options": [
+        "只有同步关系",
+        "只有互斥关系",
+        "既有同步关系又有互斥关系",
+        "既无同步关系也无互斥关系"
+      ],
+      "answer": 2,
+      "explain": "缓冲区是<strong>临界资源</strong>，任何时刻只允许一个进程读写，因此生产者与消费者之间存在<strong>互斥</strong>关系；同时「缓冲区不满生产者才能放」「缓冲区不空消费者才能取」又构成<strong>同步</strong>关系（由 empty、full 刻画）。故二者<strong>既有同步又有互斥</strong>。"
+    },
+    {
+      "id": "q3",
+      "stem": "生产者进程放入产品前，正确的 P 操作顺序是（　）。",
+      "options": [
+        "P(empty)，再 P(mutex)",
+        "P(mutex)，再 P(empty)",
+        "P(mutex)，再 P(full)",
+        "P(full)，再 P(mutex)"
+      ],
+      "answer": 0,
+      "explain": "生产者应先<strong>申请资源信号量 P(empty)</strong>（确认有空槽），再<strong>申请互斥信号量 P(mutex)</strong>（进入临界区），即「先同步、后互斥」。若颠倒为 P(mutex)→P(empty)，在缓冲区满时会持锁等待空槽而死锁；<strong>full 是产品数，应是消费者申请</strong>，生产者不应 P(full)。"
+    },
+    {
+      "id": "q4",
+      "stem": "若生产者进程把 P 操作写成「先 P(mutex) 再 P(empty)」，且此刻缓冲区<strong>恰好已满</strong>，则可能出现（　）。",
+      "options": [
+        "缓冲区溢出",
+        "死锁",
+        "丢失更新",
+        "消费者饥饿"
+      ],
+      "answer": 1,
+      "explain": "缓冲区已满时 empty = 0。生产者<strong>先持有 mutex</strong>，再去 P(empty) 会被<strong>阻塞</strong>；消费者因 mutex 被占而无法进入临界区取走产品、也就无法执行 V(empty)。双方互相等待，形成<strong>死锁</strong>。这正说明 P 操作必须「先资源、后互斥」。"
+    },
+    {
+      "id": "q5",
+      "stem": "关于生产者-消费者问题中 V 操作的顺序，正确的说法是（　）。",
+      "options": [
+        "V(mutex) 与 V(full)（或 V(empty)）的顺序任意，交换不会引起死锁",
+        "必须先 V(full) 再 V(mutex)，否则死锁",
+        "必须先 V(empty) 再 V(mutex)，否则死锁",
+        "V 操作也必须遵循「先同步后互斥」，颠倒会死锁"
+      ],
+      "answer": 0,
+      "explain": "V 操作只会<strong>增加信号量、唤醒等待者</strong>，不会使执行 V 的进程阻塞，因此 <code>V(mutex)</code> 与 <code>V(full)/V(empty)</code> 的 <strong>先后顺序任意，交换不会死锁</strong>。不过习惯上先 <code>V(mutex)</code> 释放临界区、再 <code>V(full)/V(empty)</code> 通知对方，这样能提高并发度。只有 <strong>P 操作</strong>的顺序不能颠倒。"
+    },
+    {
+      "id": "q6",
+      "stem": "消费者从缓冲区取出一个产品后，应执行哪个操作以通知生产者有空槽可用（　）。",
+      "options": ["V(empty)", "V(full)", "P(empty)", "P(full)"],
+      "answer": 0,
+      "explain": "取出产品意味着多出一个空闲缓冲区，故消费者应执行 <strong>V(empty)</strong>，使 empty 加 1，唤醒可能在等空槽的生产者。取产品前消费者应执行 P(full) 申请产品；<strong>V(full) 是生产者的动作</strong>（产品 +1）。"
+    },
+    {
+      "id": "q7",
+      "stem": "在生产者-消费者问题中，若缓冲区容量<strong>恰好为 1</strong>，则可以省略的信号量是（　）。",
+      "options": ["empty", "full", "mutex", "三者都不能省略"],
+      "answer": 2,
+      "explain": "当缓冲区容量为 1 时，empty 与 full 中<strong>任意时刻至多只有一个大于 0</strong>：能放入说明缓冲区为空，能取出说明缓冲区为满，生产者与消费者<strong>不可能同时进入缓冲区</strong>，其互斥已被 empty/full 隐含实现，故 <strong>mutex 可以省略</strong>。empty、full 仍需分别表示空槽与产品，不能省。"
+    },
+    {
+      "id": "q8",
+      "stem": "某时刻生产者-消费者模型中的缓冲区<strong>已被放满</strong>（容量为 n），则此时各信号量的取值应为（　）。",
+      "options": [
+        "empty = 0，full = n",
+        "empty = n，full = 0",
+        "empty = 1，full = n−1",
+        "mutex = 0"
+      ],
+      "answer": 0,
+      "explain": "缓冲区满意味着<strong>没有空槽</strong>，故 empty = 0；<strong>产品数等于容量</strong>，故 full = n。二者满足 empty + full = n。mutex 在没有进程处于临界区时应为 1，不会因缓冲区满而变为 0。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "生产者-消费者问题（有界缓冲区）",
+      "prompt": "<p>用<strong>信号量机制</strong>实现经典的生产者-消费者问题：容量为 <code>capacity</code> 的有界缓冲区，<code>n_producers</code> 个生产者各生产 <code>items_per_producer</code> 个产品，<code>n_consumers</code> 个消费者等量取出全部产品。</p><p>请在 <code>run(S)</code> 中：设置互斥信号量 <code>mutex</code> 与同步信号量 <code>empty</code>、<code>full</code>，用 <code>S.buffer(capacity)</code> 建立缓冲区，并用 <code>S.spawn(fn, *args)</code> 启动生产者/消费者线程。判题会在多轮运行中校验：不溢出/不下溢、计数无丢失更新、全部产品被消费、无死锁。</p><p>可用的 harness API：<code>S.sem(init, name)</code>、<code>S.P(s)</code>、<code>S.V(s)</code>、<code>S.buffer(cap)</code>（<code>.put(item)</code>/<code>.get()</code>）、<code>S.counter(init, name)</code>、<code>S.spawn(fn, *args)</code>、<code>S.sleep(ms)</code>、<code>S.log(*a)</code>，配置由 <code>S.cfg</code> 提供。</p>",
+      "c_reference": "semaphore mutex = 1;   // 缓冲区互斥\nsemaphore empty = n;   // 空闲缓冲区数，初值 n\nsemaphore full  = 0;   // 产品数，初值 0\n\nproducer() {\n    while (1) {\n        produce an item;\n        P(empty);          // 先申请空槽\n        P(mutex);          // 再进入临界区\n        put item into buffer;\n        V(mutex);          // 先退出临界区\n        V(full);           // 再通知消费者\n    }\n}\n\nconsumer() {\n    while (1) {\n        P(full);           // 先申请产品\n        P(mutex);\n        take item from buffer;\n        V(mutex);\n        V(empty);          // 通知生产者有空槽\n        consume the item;\n    }\n}",
+      "python_reference": "def run(S):\n    cap = int(S.cfg[\"capacity\"])\n    np = int(S.cfg[\"n_producers\"])\n    nc = int(S.cfg[\"n_consumers\"])\n    per = int(S.cfg[\"items_per_producer\"])\n    total = np * per\n\n    empty = S.sem(cap, \"empty\")   # 空闲缓冲区数目，初值 cap\n    full = S.sem(0, \"full\")       # 产品数目，初值 0\n    mutex = S.sem(1, \"mutex\")     # 缓冲区互斥\n    buf = S.buffer(cap)           # 有界缓冲区\n\n    def producer(pid):\n        for i in range(per):\n            item = (pid, i)\n            S.P(empty)            # 先申请空槽（同步）\n            S.P(mutex)            # 再进入临界区（互斥）\n            buf.put(item)\n            S.V(mutex)            # 先退出临界区\n            S.V(full)             # 再通知消费者：产品 +1\n            S.sleep(1)\n\n    def consumer(cid):\n        for _ in range(total // nc):\n            S.P(full)             # 先申请产品（同步）\n            S.P(mutex)\n            item = buf.get()\n            S.V(mutex)\n            S.V(empty)            # 通知生产者：空槽 +1\n            S.sleep(1)\n            S.log(\"consumer\", cid, \"got\", item)\n\n    for p in range(np):\n        S.spawn(producer, p)\n    for c in range(nc):\n        S.spawn(consumer, c)",
+      "starter_python": "def run(S):\n    cap = int(S.cfg[\"capacity\"])\n    np = int(S.cfg[\"n_producers\"])\n    nc = int(S.cfg[\"n_consumers\"])\n    per = int(S.cfg[\"items_per_producer\"])\n    total = np * per\n\n    # TODO: 1) 创建三个信号量 empty(初值 cap)、full(初值 0)、mutex(初值 1)\n    # TODO: 2) 用 S.buffer(cap) 建立有界缓冲区\n    # TODO: 3) 定义 producer(pid) 与 consumer(cid)：\n    #          生产者 P(empty) -> P(mutex) -> put -> V(mutex) -> V(full)\n    #          消费者 P(full)  -> P(mutex) -> get -> V(mutex) -> V(empty)\n    # TODO: 4) 用 S.spawn 启动 np 个生产者与 nc 个消费者\n    pass",
+      "judge_problem_id": "pc-bounded-buffer",
+      "hints": [
+        "三个信号量：empty 初值 = 缓冲区容量 cap，full 初值 = 0，mutex 初值 = 1。",
+        "P 操作顺序必须先 P(empty)/P(full) 再 P(mutex)，颠倒会死锁；V 操作顺序任意。",
+        "put 前后必须用 mutex 保护，否则会出现并发进入临界区或计数丢失更新。",
+        "用 S.spawn(函数名, 参数) 启动线程，主流程结束后判题会自动 join。"
+      ]
+    }
+  ]
+}

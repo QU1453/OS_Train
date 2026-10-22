@@ -1,0 +1,116 @@
+<h2>1. 为什么需要虚拟机</h2>
+
+<p>传统计算机中，一台物理机器通常只安装并运行<strong>一个操作系统</strong>，硬件资源难以在同一时间被多套系统共享。虚拟化技术通过把一台物理计算机「切分」成多台相互隔离的逻辑计算机，突破了「一机一系统」的限制。</p>
+
+<p>它带来两个核心价值：<strong>资源复用</strong>（提高硬件利用率）与<strong>环境隔离</strong>（一台虚拟机出问题通常不牵连其他）。</p>
+
+<div class="blk def">
+  <div class="blk__label">定义</div>
+  <p><strong>虚拟机（Virtual Machine, VM）</strong>是指通过虚拟化技术，在一台物理计算机上虚拟出的、具有完整硬件系统功能、运行在完全隔离环境中的逻辑计算机。每台虚拟机都拥有自己独立的虚拟硬件（虚拟 CPU、虚拟内存、虚拟外设），并可独立安装、运行各自的操作系统。</p>
+</div>
+
+<h2>2. 虚拟机管理程序（VMM）</h2>
+
+<p>让多台虚拟机共存而不互相干扰的关键部件，是<strong>虚拟机管理程序</strong>。</p>
+
+<div class="blk def">
+  <div class="blk__label">核心概念</div>
+  <p><strong>虚拟机管理程序（Virtual Machine Monitor, VMM）</strong>，又称 <strong>Hypervisor</strong>，是位于物理硬件与虚拟机之间、负责资源抽象与分配的软件层。它把物理资源（CPU、内存、I/O）抽象、切分并分配给上层各虚拟机，同时保证各虚拟机之间彼此隔离。</p>
+</div>
+
+<p>按 VMM 所处的位置，可将它分为两类——这是本节的<strong>核心考点</strong>。</p>
+
+<h3>2.1 第一类虚拟机管理程序（裸金属型，Type-1）</h3>
+
+<ul>
+  <li><strong>运行位置</strong>：直接运行在<strong>裸机硬件</strong>之上，不依赖任何宿主操作系统，本质上相当于一个操作系统。</li>
+  <li><strong>特权级</strong>：运行在<strong>最高特权级</strong>，直接控制硬件资源并把它分配给各虚拟机。</li>
+  <li><strong>典型产品</strong>：Xen、VMware ESXi、Microsoft Hyper-V 等。</li>
+</ul>
+
+<h3>2.2 第二类虚拟机管理程序（宿主型，Type-2）</h3>
+
+<ul>
+  <li><strong>运行位置</strong>：运行在<strong>宿主操作系统</strong>之上，是宿主 OS 上的一个<strong>应用程序</strong>。</li>
+  <li><strong>特权级</strong>：借助宿主操作系统来管理硬件，自身并不直接掌控硬件。</li>
+  <li><strong>典型产品</strong>：VMware Workstation、VirtualBox 等桌面虚拟化软件。</li>
+</ul>
+
+<table class="tbl">
+  <thead>
+    <tr><th>对比项</th><th>第一类（裸金属型）</th><th>第二类（宿主型）</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>运行位置</td><td>直接在裸机硬件之上</td><td>在宿主操作系统之上</td></tr>
+    <tr><td>是否依赖宿主 OS</td><td>不依赖，本身即相当于 OS</td><td>依赖，是宿主 OS 上的应用程序</td></tr>
+    <tr><td>典型产品</td><td>Xen、VMware ESXi、Hyper-V</td><td>VMware Workstation、VirtualBox</td></tr>
+    <tr><td>性能</td><td>更接近物理机，开销较小</td><td>多经一层宿主 OS，开销相对大</td></tr>
+    <tr><td>典型场景</td><td>服务器、数据中心</td><td>个人桌面、学习实验</td></tr>
+  </tbody>
+</table>
+
+<div class="blk key">
+  <div class="blk__label">关键结论</div>
+  <p>判断第一类还是第二类，只需问一句：<strong>VMM 是「直接站在硬件上」，还是「站在宿主操作系统上」</strong>。前者是第一类，后者是第二类。</p>
+</div>
+
+<h2>3. 虚拟化原理</h2>
+
+<p>VMM 通过「<strong>抽象 + 分配 + 隔离</strong>」实现虚拟化：</p>
+
+<ol>
+  <li><strong>抽象</strong>：把物理 CPU、内存、外设等资源抽象成可被多个虚拟机共享的资源池。</li>
+  <li><strong>分配</strong>：按需把资源切分给各虚拟机，使每台虚拟机都「看到」一套完整的虚拟硬件。</li>
+  <li><strong>隔离</strong>：各虚拟机运行在各自独立的环境中，互不可见、互不干扰。</li>
+</ol>
+
+<div class="blk memo">
+  <div class="blk__label">一句话理解</div>
+  <p>VMM 就像「硬件的总调度员」：把一份物理资源切成多份虚拟资源分给每个虚拟机，并保证谁也不越界。</p>
+</div>
+
+<h2>4. 虚拟机的优点与局限</h2>
+
+<table class="tbl">
+  <thead>
+    <tr><th>维度</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>优点：隔离性好</strong></td><td>各虚拟机彼此独立，一台崩溃通常不影响其他虚拟机与宿主系统。</td></tr>
+    <tr><td><strong>优点：资源复用</strong></td><td>一台物理机可同时运行多套不同操作系统，提高硬件利用率。</td></tr>
+    <tr><td><strong>优点：易封装迁移</strong></td><td>虚拟机以文件形式封装，便于复制、快照与回滚，适合做实验。</td></tr>
+    <tr><td><strong>局限：性能开销</strong></td><td>虚拟化会带来额外开销，第二类 VMM 因多一层宿主 OS 尤为明显。</td></tr>
+    <tr><td><strong>局限：依赖硬件、管理复杂</strong></td><td>高效虚拟化通常需要 CPU 提供硬件虚拟化支持，规模化管理成本较高。</td></tr>
+  </tbody>
+</table>
+
+<div class="blk warn">
+  <div class="blk__label">易错点</div>
+  <p>虚拟机能提高<strong>资源利用率与隔离性</strong>，但<strong>并非没有性能开销</strong>。凡宣称「虚拟机与物理机性能完全相同」「不需要任何硬件支持即可高效运行」的说法均错误。</p>
+</div>
+
+<div class="scene" data-scene="os-vm"></div>
+<p class="scene-tip">拖动可旋转视角；点击下方按钮切换演示，字幕会随步骤更新。</p>
+
+<h2>5. 小结与真题问法</h2>
+
+<div class="blk memo">
+  <div class="blk__label">记忆口诀</div>
+  <p><strong>一个部件</strong>：VMM（Hypervisor）。</p>
+  <p><strong>两大类</strong>：第一类——站硬件上（裸金属，Xen/ESXi）；第二类——站宿主 OS 上（宿主型，Workstation/VirtualBox）。</p>
+  <p><strong>三步原理</strong>：抽象 → 分配 → 隔离。</p>
+</div>
+
+<div class="blk exam">
+  <div class="blk__label">真题典型问法</div>
+  <p>① 给出一组虚拟化产品，问「哪些属于第一类/第二类 VMM」→ 看它<strong>在硬件上还是在宿主 OS 上</strong>。</p>
+  <p>② 问「第一类与第二类的区别」→ 从<strong>运行位置、是否依赖宿主 OS、性能</strong>三方面作答。</p>
+  <p>③ 判断关于虚拟机优缺点的说法 → 常见错误是「无性能开销」「不依赖硬件」「不需要隔离」。</p>
+</div>
+
+<div class="blk quote">
+  <div class="blk__label">教材原文（王道）</div>
+  <p>虚拟机管理程序（VMM）又称 Hypervisor，是运行在物理硬件与虚拟机之间的软件层，负责将物理资源抽象、分配并隔离给上层的一台或多台虚拟机。</p>
+</div>
+
+<p>完成下方选择题后，进入下一节 <strong>1.7 本章小结与真题精讲</strong>。</p>

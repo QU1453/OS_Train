@@ -1,0 +1,118 @@
+{
+  "choice": [
+    {
+      "id": "q1",
+      "stem": "若系统某时刻的资源分配图<strong>可完全化简</strong>，则（　）。",
+      "options": [
+        "系统一定处于死锁状态",
+        "系统一定处于不安全状态",
+        "系统一定不发生死锁",
+        "无法据此判断系统状态"
+      ],
+      "answer": 2,
+      "explain": "由<strong>死锁定理</strong>：资源分配图<strong>可完全化简</strong> ⇔ 系统<strong>不产生死锁</strong>；<strong>不可完全化简</strong> ⇔ 系统处于死锁状态。故 C 正确，A、B、D 错误。"
+    },
+    {
+      "id": "q2",
+      "stem": "关于资源分配图中的环（环路），下列叙述中<strong>正确</strong>的是（　）。",
+      "options": [
+        "图中存在环就一定发生死锁",
+        "环是死锁的充分必要条件",
+        "环是死锁的必要条件，但不一定发生死锁",
+        "图中没有环也可能发生死锁"
+      ],
+      "answer": 2,
+      "explain": "资源分配图中存在<strong>环只是死锁的必要条件，而非充分条件</strong>：当资源有多个实例时，有环但图仍可化简，就不会死锁。仅当<strong>每类资源只有一个实例</strong>时，环才是死锁的充分必要条件。故 C 正确，A、B、D 错误。"
+    },
+    {
+      "id": "q3",
+      "stem": "死锁检测与死锁避免的主要区别在于（　）。",
+      "options": [
+        "死锁检测在分配资源之前进行，死锁避免在之后进行",
+        "死锁检测在死锁发生之后进行，死锁避免在分配资源之前进行",
+        "两者在实现上完全等价，没有区别",
+        "死锁检测需破坏四个必要条件，死锁避免不需要"
+      ],
+      "answer": 1,
+      "explain": "死锁<strong>避免</strong>是在每次分配资源<strong>之前</strong>做安全性预演，防患于未然；死锁<strong>检测</strong>是平时不限制，在死锁可能<strong>已经发生之后</strong>再运行检测程序并解除。二者时机不同，B 正确、A 说反、C 错误；破坏四个必要条件是死锁预防的做法，D 错误。"
+    },
+    {
+      "id": "q4",
+      "stem": "在基于矩阵的死锁检测算法中，判断某进程能否运行完成时，比较的是（　）。",
+      "options": [
+        "进程的最大需求 Max 与工作向量 Work",
+        "进程当前的请求 Request 与工作向量 Work",
+        "进程的优先级与工作向量 Work",
+        "进程的 Allocation 与工作向量 Work"
+      ],
+      "answer": 1,
+      "explain": "检测算法中，对未完成的进程判断 <strong>Request[i] ≤ Work</strong>（逐分量），满足则认为该进程可获得所需资源、能运行完成并把 <strong>Allocation[i] 加回 Work</strong>。这里用的是进程<strong>当前实际提出的请求 Request</strong>，不是 Max，故 B 正确。"
+    },
+    {
+      "id": "q5",
+      "stem": "某系统有两类资源，当前 Available = (1, 0)，三个进程的 Allocation 与已提出的 Request 分别为：Allocation = {(1,0), (0,1), (0,1)}，Request = {(0,0), (2,1), (2,1)}。用检测算法求处于死锁的进程集合，结果是（　）。",
+      "options": [
+        "{P1, P2}",
+        "{P0, P1, P2}",
+        "{P2}",
+        "无死锁"
+      ],
+      "answer": 0,
+      "explain": "Work = (1,0)。P0 的 Request (0,0) ≤ (1,0)，可完成并归还 (1,0)，Work 变为 <strong>(2,0)</strong>。此后 P1 的 (2,1)、P2 的 (2,1) 都因第二个分量 1 > 0 而无法满足，均不能完成。故死锁进程为 <strong>{P1, P2}</strong>，选 A。"
+    },
+    {
+      "id": "q6",
+      "stem": "下列选项中，<strong>不属于</strong>死锁解除方法的是（　）。",
+      "options": [
+        "资源剥夺法",
+        "撤销进程法",
+        "进程回退法",
+        "死锁预防法"
+      ],
+      "answer": 3,
+      "explain": "死锁解除的三种方法是<strong>资源剥夺法、撤销进程法和进程回退法</strong>。死锁预防属于<strong>事前策略</strong>，是通过破坏四个必要条件之一来防止死锁发生，不是「解除」已发生死锁的手段，故选 D。"
+    },
+    {
+      "id": "q7",
+      "stem": "在死锁预防、死锁避免、死锁检测与解除三类策略中，通常允许<strong>最高并发度（资源利用率最高）</strong>的是（　）。",
+      "options": [
+        "死锁预防",
+        "死锁避免",
+        "死锁检测与解除",
+        "三者完全一样"
+      ],
+      "answer": 2,
+      "explain": "死锁预防通过限制资源申请方式（破坏必要条件）来杜绝死锁，<strong>并发度最低</strong>；死锁避免需在每次分配前做安全性检查，也会限制并发；死锁检测与解除<strong>平时不做任何限制</strong>，允许死锁发生后再处理，因此并发度最高、资源利用率最好，代价是检测与解除的开销。故选 C。"
+    },
+    {
+      "id": "q8",
+      "stem": "在资源分配图 G = (V, E) 中，表示「资源 R<sub>j</sub> 的一个实例已分配给进程 P<sub>i</sub>」的边是（　）。",
+      "options": [
+        "P<sub>i</sub> → R<sub>j</sub>，称为请求边",
+        "R<sub>j</sub> → P<sub>i</sub>，称为分配边",
+        "双向边 P<sub>i</sub> ↔ R<sub>j</sub>",
+        "环路边"
+      ],
+      "answer": 1,
+      "explain": "资源分配图中：<strong>请求边</strong>由进程指向资源（P<sub>i</sub> → R<sub>j</sub>），表示进程申请资源；<strong>分配边</strong>由资源方框内的圆点指向进程（R<sub>j</sub> → P<sub>i</sub>），表示资源已分配给该进程。故表示「已分配」的是分配边，选 B。"
+    }
+  ],
+  "code": [
+    {
+      "id": "c1",
+      "title": "死锁检测：求不可化简（死锁）的进程集合",
+      "prompt": "<p>给定系统当前状态：可用资源向量 <code>available</code>（长度 m），各进程已分配资源矩阵 <code>allocation</code> 与<strong>尚需（请求）资源矩阵</strong> <code>request</code>（均为 n × m）。请实现<strong>死锁检测算法</strong>，求最终无法完成（即处于死锁）的进程下标列表。</p><ul><li>令工作向量 <code>work = available</code>，完成标志 <code>finish</code> 全为 false；</li><li>反复寻找满足 <code>request[i] ≤ work</code>（逐分量）的未完成进程：若找到，则令其完成，<code>work += allocation[i]</code> 并标记 <code>finish[i] = True</code>；</li><li>直到没有这样的进程为止。</li></ul><p>返回<strong>升序排列</strong>的未完成（死锁）进程下标列表；若无死锁则返回空列表 <code>[]</code>。</p>",
+      "c_reference": "/* 等价 C 语言参考：死锁检测（资源分配图可完全化简） */\n#include <stdio.h>\n#include <stdbool.h>\n\n#define MAXN 16\n#define MAXM 16\n\n/* available[0..m-1]；allocation / request 为 [n][m]；返回未完成进程个数，dead[] 输出其下标 */\nint detect(int n, int m, int available[], int allocation[][MAXM],\n           int request[][MAXM], int dead[]) {\n    int work[MAXM];\n    bool finish[MAXN];\n    for (int j = 0; j < m; j++) work[j] = available[j];\n    for (int i = 0; i < n; i++) finish[i] = false;\n\n    while (true) {\n        bool progressed = false;\n        for (int i = 0; i < n; i++) {\n            if (finish[i]) continue;\n            bool ok = true;\n            for (int j = 0; j < m; j++) {\n                if (request[i][j] > work[j]) { ok = false; break; }\n            }\n            if (ok) {\n                for (int j = 0; j < m; j++) work[j] += allocation[i][j];\n                finish[i] = true;\n                progressed = true;\n                break;\n            }\n        }\n        if (!progressed) break;\n    }\n\n    int cnt = 0;\n    for (int i = 0; i < n; i++)\n        if (!finish[i]) dead[cnt++] = i;   /* 未完成者即死锁进程 */\n    return cnt;\n}\n\nint main(void) {\n    int available[2] = {0, 0};\n    int allocation[2][MAXM] = {{1,0},{0,1}};\n    int request[2][MAXM] = {{0,1},{1,0}};\n    int dead[2];\n    int cnt = detect(2, 2, available, allocation, request, dead);\n    printf(\"deadlocked (%d): \", cnt);\n    for (int i = 0; i < cnt; i++) printf(\"%d \", dead[i]);\n    printf(\"\\n\");\n    return 0;\n}\n",
+      "python_reference": "def solve(available, allocation, request):\n    \"\"\"死锁检测（资源分配图可完全化简则无死锁）。\n\n    available: 一维资源向量（长度 m）。\n    allocation / request: [进程数][资源数] 的二维列表（request 为尚需/请求量）。\n    返回: 最终未完成（死锁）的进程下标列表，升序；无死锁返回 []。\n    \"\"\"\n    n = len(allocation)\n    m = len(available)\n    work = list(available)\n    finish = [False] * n\n\n    while True:\n        progressed = False\n        for i in range(n):\n            if finish[i]:\n                continue\n            if all(request[i][j] <= work[j] for j in range(m)):\n                for j in range(m):\n                    work[j] += allocation[i][j]   # 进程 i 完成，归还其占用的资源\n                finish[i] = True\n                progressed = True\n                break\n        if not progressed:\n            break\n\n    return sorted(i for i in range(n) if not finish[i])\n",
+      "starter_python": "def solve(available, allocation, request):\n    \"\"\"死锁检测：返回处于死锁（无法完成）的进程下标列表（升序）。\n\n    available: 一维资源向量（长度 m）。\n    allocation / request: [进程数][资源数] 的二维列表。\n    返回: 未完成进程下标列表，升序；无死锁返回 []。\n    \"\"\"\n    # TODO: 1) 令 work = available，finish 全为 False\n    #       2) 反复寻找满足 request[i] <= work（逐分量）的未完成进程 i，\n    #          令 work += allocation[i] 并标记 finish[i] = True\n    #       3) 返回所有未完成进程下标，升序排列\n    pass\n",
+      "judge_problem_id": "deadlock-detection",
+      "hints": [
+        "work 初始等于 available，finish 数组初始全为 False。",
+        "判断条件用「当前请求」request[i] 逐分量 ≤ work，而不是最大需求。",
+        "进程 i 一旦可完成，就把它的 allocation[i] 加回 work（归还资源）。",
+        "不断重复直到某轮没有任何进程能完成，即为终止条件。",
+        "最后把所有 finish 仍为 False 的进程下标收集起来，升序返回；全都完成则返回空列表 []。"
+      ]
+    }
+  ]
+}
