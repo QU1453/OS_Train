@@ -5,6 +5,19 @@
 
 ---
 
+## [20] 仓库化：README 重写 + 推 GitHub + 仓库简介（2026-10-22）
+
+- 需求：把 `OS_Train` 推到 `github.com/QU1453/OS_Train`，并写含「文件结构 + 作用图」的简介。
+- 改动文件（只动文档，不动运行代码）：
+  - 重写 `README.md`：两张 mermaid 作用图（四层架构 `SH/FE/DT/JD`、学习闭环 `P1…P10`）+ 完整目录树 + 课程题量/快速开始/打包/判题/零 C 盘写入。
+  - 新增 `.gitignore`：排除 `dist/`、`build/_work|_pyi_cache|_tmp`、`var/`、`.venv/`、`__pycache__/`、`*.pyc`、`*.lnk`、`_anim_preview.html`、`_fig_preview.html`。
+  - 新增 `重要问题修复.md`：5 条阻断性缺陷（ICU DLL 误收、Qt6 DLL 抢占、判题卡死、写 C 盘、WinError 5）的现象/根因/改法/验证/回滚。
+  - 新增 `push_to_github.ps1`：一键 init→add→commit→push（已去掉 `Read-Host` 便于自动化）。
+- 推送：`git init -b main` → 226 文件 / 8.8 MB → 提交 `05b2dd3` → `push -u origin main` 成功；仓库 description 已写入（127 字符）。
+- 回滚：删除本地 `.git` 即可回到纯目录；文档改动均可从提交历史取回。
+
+---
+
 ## [19] 重新打包 exe（2026-10-22 21:18）
 
 - 问题：`dist\OS_Train\OS_Train.exe` 停留在 10-21 22:04，本轮 2.4.2 的图解 / 大题 / 判题全未进包。
